@@ -1,14 +1,14 @@
 CREATE TABLE if not exists clientes(
-  	cli_id INTEGER PRIMARY KEY AUTOINCREMENT,
+  	cli_id INTEGER PRIMARY KEY AUTOINCREMENT UNIQUE,
  	cli_nome VARCHAR (100) NOT NULL,
-  	cli_cpf VARCHAR (14) NOT NULL,
-  	cli_e-mail VARCHAR (100) NOT NULL
+  	cli_cpf VARCHAR (14) NOT NULL UNIQUE,
+  	cli_email VARCHAR (100) NOT NULL
  );
   
 CREATE TABLE if not EXISTS funcionario(
-  	id INTEGER PRIMARY KEY AUTOINCREMENT,
-  	func_nome  VARCHAR (100) NOT NULL,
-  	func_cpf VARCHAR (14) NOT NULL,
+  	func_id INTEGER PRIMARY KEY AUTOINCREMENT UNIQUE,
+  	func_nome VARCHAR (100) NOT NULL,
+  	func_cpf VARCHAR (14) NOT NULL UNIQUE,
   	func_telefone VARCHAR (11) NOT NULL,
   	func_email VARCHAR (100) NOT NULL,
   	func_cargo VARCHAR (50) NOT NULL,
@@ -16,7 +16,7 @@ CREATE TABLE if not EXISTS funcionario(
 );
   
  CREATE TABLE IF NOT EXISTS endereço(
-   end_id INTEGER PRIMARY KEY AUTOINCREMENT,
+   end_id INTEGER PRIMARY KEY AUTOINCREMENT UNIQUE,
    end_cep VARCHAR (8) NOT NULL,
    end_logradouro VARCHAR (50) NOT NULL,
    end_numero VARCHAR (5) not NULL,
@@ -27,9 +27,10 @@ CREATE TABLE if not EXISTS funcionario(
 );
    
  CREATE TABLE IF NOT EXISTS telefone(
-    tel_id INTEGER PRIMARY KEY AUTOINCREMENT,
-    cli_id FOREIGN KEY,
-    tel_numero VARCHAR (15) NOT NULL
+    tel_id INTEGER PRIMARY KEY AUTOINCREMENT UNIQUE,
+    cli_id INTEGER NOT NULL,
+    tel_numero VARCHAR (15) NOT NULL,
+    FOREIGN KEY (cli_id) REFERENCES clientes(cli_id)
 );
  CREATE TABLE if not EXISTS produto(
 	prod_id_seq INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -42,3 +43,9 @@ CREATE TABLE if not EXISTS funcionario(
     prod_data_cadastro VARCHAR (12) NOT NULL,
     prod_empenho VARCHAR (34) NOT NULL
  );
+ 
+ INSERT INTO clientes( cli_nome , cli_cpf , cli_email )
+ VALUES
+ ('joao' , '09814349714' , 'joao@gmail.com' ,'456556565');
+ 
+ SELECT * from clientes;
