@@ -49,3 +49,46 @@ CREATE TABLE if not EXISTS funcionario(
  ('joao' , '09814349714' , 'joao@gmail.com' ,'456556565');
  
  SELECT * from clientes;
+
+CREATE TABLE if not EXISTS fornecedor(
+   forn_id_seq INTEGER PRIMARY KEY AUTOINCREMENT,
+   forn_nome VARCHAR (22) NOT NULL,
+   forn_cnpj VARCHAR (18) NOT NULL,
+   forn_telefone VARCHAR (14) NOT NULL,
+   forn_email VARCHAR (20) NOT NULL,
+   forn_cep VARCHAR (9) NOT NULL,
+   forn_logradouro VARCHAR (12) NOT NULL,
+   forn_numero VARCHAR (4) NOT NULL,
+   forn_complemento VARCHAR (8) NOT NULL,
+   forn_bairro VARCHAR (9) NOT NULL,
+   forn_cidade VARCHAR (8) NOT NULL,
+   forn_estado VARCHAR (2) NOT NULL,
+   forn_contato_nome VARCHAR (22) NOT NULL,
+   forn_contato_cargo VARCHAR (17) NOT NULL,
+   forn_contato_telefone VARCHAR (14) NOT NULL,
+   forn_contato_email VARCHAR (20) NOT NULL
+ );
+ 
+ INSERT INTO fornecedor(
+   forn_nome,
+   forn_cnpj,
+   forn_telefone,
+   forn_email,
+   forn_cep,
+   forn_logradouro,
+   forn_numero,
+   forn_complemento,
+   forn_bairro,
+   forn_cidade,
+   forn_estado,
+   forn_contato_nome,
+   forn_contato_cargo,
+   forn_contato_telefone,
+   forn_contato_email
+)
+
+VALUES
+  ('nome' , 'cnpj' , 'telefone' , 'email' , 'cep' , 'logradouro' , 'numero' , 'complemento' , 'bairro' , 'cidade' , 'estado' , 'contato nome' , 'contato cargo' , 'contato telefone' , 'contato email');
+
+
+SELECT * FROM fornecedor;
