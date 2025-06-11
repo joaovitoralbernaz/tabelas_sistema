@@ -1,0 +1,11 @@
+CREATE TABLE if not EXISTS produto(
+prod_id_seq INTEGER PRIMARY KEY AUTOINCREMENT,
+ prod_nome VARCHAR (50) NOT NULL,
+ prod_descricao VARCHAR (222) NOT NULL,
+ prod_quantidade_minima VARCHAR (24) NOT NULL,
+ prod_preco_anterior VARCHAR (17) NOT NULL,
+ prod_preco_atual VARCHAR (19) NOT NULL,
+ prod_preco_medio VARCHAR (16) NOT NULL,
+ prod_data_cadastro VARCHAR (12) NOT NULL,
+ prod_empenho VARCHAR (34) NOT NULL
+  );
