@@ -161,4 +161,4 @@ INSERT INTO produto (
 (4, 'Soro Fisiológico 250ml', 'Soro Fisiológico 0,9% - 250ml - Uso nasal e ocular', '60', '4.90', '4.20', '4.55', '2024-03-10', 'LOTE007'),
 (4, 'Álcool 70% - 1L', 'Álcool Etílico Hidratado 70% - Antisséptico - Frasco 1 litro', '45', '12.90', '11.90', '12.40', '2024-03-15', 'LOTE008'),
 (5, 'Ibuprofeno 600mg', 'Ibuprofeno 600mg - Anti-inflamatório - Caixa com 10 comprimidos', '30', '16.90', '15.20', '16.05', '2024-04-01', 'LOTE009'),
-(5, 'Termômetro Digital', 'Termômetro Digital - Medição em 60 segundos - À prova d\'água', '15', '35.90', '32.50', '34.20', '2024-04-10', 'LOTE010');
+(5, 'Termômetro Digital', 'Termômetro Digital - Medição em 60 segundos - À prova d`água', '15', '35.90', '32.50', '34.20', '2024-04-10', 'LOTE010');
