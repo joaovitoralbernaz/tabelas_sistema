@@ -1,0 +1,74 @@
+-- Criação das Tabelas
+CREATE TABLE Fornecedores (
+    id_fornecedor INT PRIMARY KEY,
+    nome VARCHAR(100),
+    telefone VARCHAR(20),
+    email VARCHAR(100)
+);
+
+CREATE TABLE Clientes (
+    id_cliente INT PRIMARY KEY,
+    nome VARCHAR(100),
+    telefone VARCHAR(20),
+    email VARCHAR(100),
+    cpf VARCHAR(14)
+);
+
+CREATE TABLE Funcionarios (
+    id_funcionario INT PRIMARY KEY,
+    nome VARCHAR(100),
+    cargo VARCHAR(50),
+    telefone VARCHAR(20)
+);
+
+CREATE TABLE Produtos (
+    id_produto INT PRIMARY KEY,
+    nome VARCHAR(100),
+    preco_unitario DECIMAL(10,2),
+    quantidade_estoque INT,
+    id_fornecedor INT,
+    FOREIGN KEY (id_fornecedor) REFERENCES Fornecedores(id_fornecedor)
+);
+
+CREATE TABLE Movimentos (
+    id_movimento INT PRIMARY KEY,
+    tipo_movimento VARCHAR(10), -- 'entrada' ou 'saida'
+    data_movimento DATE,
+    quantidade INT,
+    id_produto INT,
+    id_funcionario INT,
+    id_cliente INT,
+    FOREIGN KEY (id_produto) REFERENCES Produtos(id_produto),
+    FOREIGN KEY (id_funcionario) REFERENCES Funcionarios(id_funcionario),
+    FOREIGN KEY (id_cliente) REFERENCES Clientes(id_cliente)
+);
+
+-- Inserção de Dados de Exemplo
+INSERT INTO Fornecedores VALUES 
+(1, 'Medic Distribuidora', '4133330000', 'contato@medic.com'),
+(2, 'Saúde Farma Ltda', '4144440001', 'vendas@saudefarma.com');
+
+INSERT INTO Clientes VALUES 
+(1, 'Carlos da Silva', '41988887777', 'carlos@email.com', '123.456.789-00'),
+(2, 'Maria Oliveira', '41999998888', 'maria@email.com', '987.654.321-00');
+
+INSERT INTO Funcionarios VALUES 
+(1, 'João Pedro', 'Atendente', '4177776655'),
+(2, 'Ana Paula', 'Farmacêutica', '4166665544');
+
+INSERT INTO Produtos VALUES 
+(1, 'Paracetamol 500mg', 5.50, 100, 1),
+(2, 'Dipirona 1g', 6.20, 50, 2),
+(3, 'Omeprazol 20mg', 9.90, 80, 1);
+
+INSERT INTO Movimentos VALUES 
+(1, 'saida', '2025-06-12', 2, 1, 1, 1),
+(2, 'saida', '2025-06-12', 1, 2, 2, 2),
+(3, 'entrada', '2025-06-11', 50, 3, 2, NULL);
+
+-- Consultas para verificar os dados
+SELECT * FROM Fornecedores;
+SELECT * FROM Clientes;
+SELECT * FROM Funcionarios;
+SELECT * FROM Produtos;
+SELECT * FROM Movimentos;
