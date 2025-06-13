@@ -1,3 +1,4 @@
+-- Criação das tabelas
 CREATE TABLE if not exists clientes(
   	cli_id INTEGER PRIMARY KEY AUTOINCREMENT UNIQUE,
  	cli_nome VARCHAR (100) NOT NULL,
@@ -17,13 +18,16 @@ CREATE TABLE if not EXISTS funcionario(
   
  CREATE TABLE IF NOT EXISTS endereço(
    end_id INTEGER PRIMARY KEY AUTOINCREMENT UNIQUE,
+   cli_id INTEGER,
+   func_id INTEGER,
    end_cep VARCHAR (8) NOT NULL,
    end_logradouro VARCHAR (50) NOT NULL,
    end_numero VARCHAR (5) not NULL,
    end_complemento VARCHAR (20) NOT NULL,
    end_bairro VARCHAR (30) NOT NULL,
    end_cidade VARCHAR (20) NOT NULL,
-   end_estado VARCHAR (2) NOT NULL
+   end_estado VARCHAR (2) NOT NULL,
+   FOREIGN key (cli_id) REFERENCES clientes(cli_id)
 );
    
  CREATE TABLE IF NOT EXISTS telefone(
@@ -32,23 +36,6 @@ CREATE TABLE if not EXISTS funcionario(
     tel_numero VARCHAR (15) NOT NULL,
     FOREIGN KEY (cli_id) REFERENCES clientes(cli_id)
 );
- CREATE TABLE if not EXISTS produto(
-	prod_id_seq INTEGER PRIMARY KEY AUTOINCREMENT,
- 	prod_nome VARCHAR (50) NOT NULL,
-    prod_descricao VARCHAR (222) NOT NULL,
-    prod_quantidade_minima VARCHAR (24) NOT NULL,
-    prod_preco_anterior VARCHAR (17) NOT NULL,
-    prod_preco_atual VARCHAR (19) NOT NULL,
-    prod_preco_medio VARCHAR (16) NOT NULL,
-    prod_data_cadastro VARCHAR (12) NOT NULL,
-    prod_empenho VARCHAR (34) NOT NULL
- );
- 
- INSERT INTO clientes( cli_nome , cli_cpf , cli_email )
- VALUES
- ('joao' , '09814349714' , 'joao@gmail.com' ,'456556565');
- 
- SELECT * from clientes;
 
 CREATE TABLE if not EXISTS fornecedor(
    forn_id_seq INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -68,8 +55,25 @@ CREATE TABLE if not EXISTS fornecedor(
    forn_contato_telefone VARCHAR (14) NOT NULL,
    forn_contato_email VARCHAR (20) NOT NULL
  );
- 
- INSERT INTO fornecedor(
+
+ CREATE TABLE if not EXISTS produto(
+	prod_id_seq INTEGER PRIMARY KEY AUTOINCREMENT,
+    forn_id INTEGER,
+ 	prod_nome VARCHAR (50) NOT NULL,
+    prod_descricao VARCHAR (222) NOT NULL,
+    prod_quantidade_minima VARCHAR (24) NOT NULL,
+    prod_preco_anterior VARCHAR (17) NOT NULL,
+    prod_preco_atual VARCHAR (19) NOT NULL,
+    prod_preco_medio VARCHAR (16) NOT NULL,
+    prod_data_cadastro VARCHAR (12) NOT NULL,
+    prod_empenho VARCHAR (34) NOT NULL,
+   FOREIGN key (forn_id) REFERENCES fornecedor(forn_id_seq)
+ );
+
+-- Inserção de dados
+
+-- FORNECEDORES
+INSERT INTO fornecedor(
    forn_nome,
    forn_cnpj,
    forn_telefone,
@@ -85,10 +89,76 @@ CREATE TABLE if not EXISTS fornecedor(
    forn_contato_cargo,
    forn_contato_telefone,
    forn_contato_email
-)
+) VALUES 
+('FarmaDistrib SA', '12.345.678/0001-90', '11987654321', 'vendas@farmadist.com', '01310100', 'Av Paulista', '1000', 'Sala 10', 'Bela Vista', 'São Paulo', 'SP', 'João Silva', 'Gerente Vendas', '11987654322', 'joao@farmadist.com'),
+('MediSupply Ltd', '23.456.789/0001-01', '21876543210', 'contato@medisup.br', '20040020', 'Rua Centro', '200', 'Galpão A', 'Centro', 'Rio de Janeiro', 'RJ', 'Maria Santos', 'Diretora Comercial', '21876543211', 'maria@medisup.br'),
+('PharmaMax Dis', '34.567.890/0001-12', '85765432109', 'vendas@pharmamax.com', '60160230', 'Rua Aldeota', '500', 'Andar 5', 'Aldeota', 'Fortaleza', 'CE', 'Pedro Costa', 'Consultor Farmac', '85765432110', 'pedro@pharmamax.com'),
+('BioMed Brasil', '45.678.901/0001-23', '41654321098', 'info@biomedbr.br', '80420090', 'Av Batel', '800', 'Conj 15', 'Batel', 'Curitiba', 'PR', 'Ana Oliveira', 'Farmacêutica', '41654321099', 'ana@biomedbr.br'),
+('Drogacentral', '56.789.012/0001-34', '31543210987', 'comercial@drogacent.br', '30112000', 'Rua Centro', '300', 'Depósito 20', 'Centro', 'Belo Horizonte', 'MG', 'Carlos Lima', 'Representante', '31543210988', 'carlos@drogacent.br');
 
-VALUES
-  ('nome' , 'cnpj' , 'telefone' , 'email' , 'cep' , 'logradouro' , 'numero' , 'complemento' , 'bairro' , 'cidade' , 'estado' , 'contato nome' , 'contato cargo' , 'contato telefone' , 'contato email');
+-- CLIENTES
+INSERT INTO clientes (cli_nome, cli_cpf, cli_email) VALUES
+('Ana Maria Silva', '123.456.789-01', 'ana.silva@email.com'),
+('João Pedro Santos', '234.567.890-12', 'joao.santos@email.com'),
+('Maria Fernanda Costa', '345.678.901-23', 'maria.costa@email.com'),
+('Carlos Eduardo Lima', '456.789.012-34', 'carlos.lima@email.com'),
+('Fernanda Oliveira', '567.890.123-45', 'fernanda.oliveira@email.com'),
+('Roberto Silva Junior', '678.901.234-56', 'roberto.junior@email.com'),
+('Patrícia Mendes', '789.012.345-67', 'patricia.mendes@email.com'),
+('Rafael Almeida', '890.123.456-78', 'rafael.almeida@email.com');
 
+-- FUNCIONÁRIOS
+INSERT INTO funcionario (func_nome, func_cpf, func_telefone, func_email, func_cargo, func_salario) VALUES
+('Dr. Lucas Ferreira', '111.222.333-44', '11999888777', 'lucas.ferreira@farmacia.com', 'Farmacêutico Responsável', '8500.00'),
+('Juliana Rodrigues', '222.333.444-55', '11888777666', 'juliana.rodrigues@farmacia.com', 'Balconista Senior', '3200.00'),
+('Bruno Machado', '333.444.555-66', '11777666555', 'bruno.machado@farmacia.com', 'Auxiliar de Farmácia', '2800.00'),
+('Camila Souza', '444.555.666-77', '11666555444', 'camila.souza@farmacia.com', 'Caixa', '2400.00'),
+('Diego Martins', '555.666.777-88', '11555444333', 'diego.martins@farmacia.com', 'Atendente', '2200.00'),
+('Dra. Larissa Pereira', '666.777.888-99', '11444333222', 'larissa.pereira@farmacia.com', 'Farmacêutica', '7500.00');
 
-SELECT * FROM fornecedor;
+-- ENDEREÇOS (para clientes e funcionários)
+INSERT INTO endereço (cli_id, func_id, end_cep, end_logradouro, end_numero, end_complemento, end_bairro, end_cidade, end_estado) VALUES
+(1, NULL, '01310100', 'Rua das Flores', '123', 'Apto 45', 'Vila Madalena', 'São Paulo', 'SP'),
+(2, NULL, '20040020', 'Av. Copacabana', '456', 'Cobertura', 'Copacabana', 'Rio de Janeiro', 'RJ'),
+(3, NULL, '30112000', 'Rua Savassi', '789', 'Casa', 'Savassi', 'Belo Horizonte', 'MG'),
+(4, NULL, '80420090', 'Av. Batel', '321', 'Sala 10', 'Batel', 'Curitiba', 'PR'),
+(5, NULL, '60160230', 'Rua Aldeota', '654', 'Apto 20', 'Aldeota', 'Fortaleza', 'CE'),
+(NULL, 1, '04567890', 'Rua Ibirapuera', '100', 'Casa 2', 'Ibirapuera', 'São Paulo', 'SP'),
+(NULL, 2, '01234567', 'Av. Faria Lima', '200', 'Apto 15', 'Itaim Bibi', 'São Paulo', 'SP'),
+(NULL, 3, '05678901', 'Rua Vila Olímpia', '300', 'Conj 5', 'Vila Olímpia', 'São Paulo', 'SP');
+
+-- TELEFONES (para clientes)
+INSERT INTO telefone (cli_id, tel_numero) VALUES
+(1, '11987654321'),
+(1, '1134567890'),
+(2, '21876543210'),
+(3, '31765432109'),
+(3, '31987654321'),
+(4, '41654321098'),
+(5, '85543210987'),
+(6, '11432109876'),
+(7, '11321098765'),
+(8, '21210987654');
+
+-- PRODUTOS
+INSERT INTO produto (
+    forn_id,
+    prod_nome,
+    prod_descricao,
+    prod_quantidade_minima,
+    prod_preco_anterior,
+    prod_preco_atual,
+    prod_preco_medio,
+    prod_data_cadastro,
+    prod_empenho
+) VALUES
+(1, 'Paracetamol 500mg', 'Paracetamol 500mg - Analgésico e antipirético - Caixa com 20 comprimidos', '50', '8.90', '7.50', '8.20', '2024-01-15', 'LOTE001'),
+(1, 'Dipirona 500mg', 'Dipirona Sódica 500mg - Analgésico e antitérmico - Caixa com 10 comprimidos', '30', '12.90', '11.50', '12.20', '2024-01-20', 'LOTE002'),
+(2, 'Omeprazol 20mg', 'Omeprazol 20mg - Protetor gástrico - Caixa com 28 cápsulas', '25', '15.90', '14.20', '15.05', '2024-02-01', 'LOTE003'),
+(2, 'Losartana 50mg', 'Losartana Potássica 50mg - Anti-hipertensivo - Caixa com 30 comprimidos', '40', '18.90', '16.80', '17.85', '2024-02-10', 'LOTE004'),
+(3, 'Vitamina C 1g', 'Vitamina C 1g - Suplemento vitamínico - Frasco com 30 comprimidos efervescentes', '20', '25.90', '23.50', '24.70', '2024-02-15', 'LOTE005'),
+(3, 'Dorflex', 'Dorflex - Relaxante muscular - Caixa com 20 comprimidos', '35', '22.90', '20.50', '21.70', '2024-03-01', 'LOTE006'),
+(4, 'Soro Fisiológico 250ml', 'Soro Fisiológico 0,9% - 250ml - Uso nasal e ocular', '60', '4.90', '4.20', '4.55', '2024-03-10', 'LOTE007'),
+(4, 'Álcool 70% - 1L', 'Álcool Etílico Hidratado 70% - Antisséptico - Frasco 1 litro', '45', '12.90', '11.90', '12.40', '2024-03-15', 'LOTE008'),
+(5, 'Ibuprofeno 600mg', 'Ibuprofeno 600mg - Anti-inflamatório - Caixa com 10 comprimidos', '30', '16.90', '15.20', '16.05', '2024-04-01', 'LOTE009'),
+(5, 'Termômetro Digital', 'Termômetro Digital - Medição em 60 segundos - À prova d\'água', '15', '35.90', '32.50', '34.20', '2024-04-10', 'LOTE010');
