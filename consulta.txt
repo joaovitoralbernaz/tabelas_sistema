@@ -1,0 +1,154 @@
+-- 1. CONSULTA TODOS OS CLIENTES
+SELECT * FROM clientes;
+
+-- 2. CONSULTA TODOS OS FUNCIONÁRIOS
+SELECT * FROM funcionario;
+
+-- 3. CONSULTA TODOS OS PRODUTOS
+SELECT * FROM produto;
+
+-- 4. CONSULTA TODOS OS FORNECEDORES
+SELECT * FROM fornecedor;
+
+-- 5. CONSULTA CLIENTES COM SEUS ENDEREÇOS
+SELECT 
+    cli_nome,
+    cli_cpf,
+    cli_email,
+    end_logradouro,
+    end_numero,
+    end_bairro,
+    end_cidade,
+    end_estado
+FROM clientes c
+LEFT JOIN endereço e ON cli_id = cli_id;
+
+-- 6. CONSULTA CLIENTES COM SEUS TELEFONES
+SELECT 
+    cli_nome,
+    cli_cpf,
+    tel_numero
+FROM clientes c
+LEFT JOIN telefone ON cli_id = cli_id;
+
+-- 7. CONSULTA FUNCIONÁRIOS COM SEUS ENDEREÇOS
+SELECT 
+    func_nome,
+    func_cargo,
+    func_salario,
+    end_logradouro,
+    end_numero,
+    end_bairro,
+    end_cidade
+FROM funcionario f
+LEFT JOIN endereço e ON f.func_id = e.func_id;
+
+-- CORRIGINDO QUERIES COM NOMES DOS FORNECEDORES DO INSERT
+-- No INSERT você usou apenas 'forn_nome', não 'forn_nome_empresa'
+
+-- 8. CONSULTA PRODUTOS COM SEUS FORNECEDORES (CORRIGIDA)
+SELECT 
+    p.prod_nome,
+    p.prod_preco_atual,
+    p.prod_estoque_atual,
+    f.forn_nome_empresa,
+    f.forn_telefone
+FROM produto p
+LEFT JOIN fornecedor f ON p.forn_id = f.forn_id_seq;
+
+-- 18. CONTAGEM DE PRODUTOS POR FORNECEDOR (CORRIGIDA)
+SELECT f.forn_nome_empresa, COUNT(p.prod_id_seq) as total_produtos
+FROM fornecedor f
+LEFT JOIN produto p ON f.forn_id_seq = p.forn_id
+GROUP BY f.forn_nome_empresa;
+
+-- 19. MÉDIA DE PREÇOS DOS PRODUTOS
+SELECT AVG(CAST(prod_preco_atual AS REAL)) as preco_medio
+FROM produto;
+
+-- 20. MAIOR E MENOR SALÁRIO DOS FUNCIONÁRIOS
+SELECT 
+    MAX(CAST(func_salario AS REAL)) as maior_salario,
+    MIN(CAST(func_salario AS REAL)) as menor_salario
+FROM funcionario;
+
+-- 21. PRODUTOS CADASTRADOS EM 2024
+SELECT prod_nome, prod_data_cadastro
+FROM produto 
+WHERE prod_data_cadastro LIKE '2024%';
+
+-- 22. CLIENTES COM MAIS DE UM TELEFONE
+SELECT c.cli_nome, COUNT(t.tel_id) as total_telefones
+FROM clientes c
+JOIN telefone t ON c.cli_id = t.cli_id
+GROUP BY c.cli_id, c.cli_nome
+HAVING COUNT(t.tel_id) > 1;
+
+-- 23. FORNECEDORES COM CONTATOS POR CARGO
+SELECT forn_nome_empresa, forn_contato_nome, forn_contato_cargo
+FROM fornecedor
+ORDER BY forn_contato_cargo;
+
+-- 24. TOTAL DE FUNCIONÁRIOS POR CARGO
+SELECT func_cargo, COUNT(*) as total
+FROM funcionario
+GROUP BY func_cargo;
+
+-- 25. PRODUTOS MAIS CAROS QUE A MÉDIA
+SELECT prod_nome, prod_preco_atual
+FROM produto
+WHERE CAST(prod_preco_atual AS REAL) > (
+    SELECT AVG(CAST(prod_preco_atual AS REAL)) FROM produto
+);
+
+-- 26. BUSCA COMPLETA DE CLIENTE (com endereço e telefones)
+SELECT 
+    c.cli_nome,
+    c.cli_cpf,
+    c.cli_email,
+    e.end_logradouro || ', ' || e.end_numero || ' - ' || e.end_bairro || ', ' || e.end_cidade as endereco_completo,
+    GROUP_CONCAT(t.tel_numero, ' / ') as telefones
+FROM clientes c
+LEFT JOIN endereço e ON c.cli_id = e.cli_id
+LEFT JOIN telefone t ON c.cli_id = t.cli_id
+GROUP BY c.cli_id;
+
+-- 27. RELATÓRIO COMPLETO DE PRODUTOS
+SELECT 
+    p.prod_nome,
+    f.forn_nome_empresa as fornecedor,
+    p.prod_categoria,
+    p.prod_preco_atual,
+    p.prod_estoque_atual,
+    p.prod_data_cadastro
+FROM produto p
+LEFT JOIN fornecedor f ON p.forn_id = f.forn_id_seq
+ORDER BY p.prod_nome;
+
+-- 28. FUNCIONÁRIOS E SEUS DADOS COMPLETOS
+SELECT 
+    f.func_nome,
+    f.func_cargo,
+    f.func_salario,
+    f.func_email,
+    f.func_telefone,
+    COALESCE(e.end_logradouro || ', ' || e.end_numero || ' - ' || e.end_cidade, 'Endereço não cadastrado') as endereco
+FROM funcionario f
+LEFT JOIN endereço e ON f.func_id = e.func_id;
+
+-- 29. FORNECEDORES COM DADOS DE CONTATO
+SELECT 
+    forn_nome_empresa,
+    forn_email,
+    forn_telefone,
+    forn_contato_nome,
+    forn_contato_cargo,
+    forn_contato_email
+FROM fornecedor;
+
+-- 30. ESTATÍSTICAS GERAIS DO SISTEMA
+SELECT 
+    (SELECT COUNT(*) FROM clientes) as total_clientes,
+    (SELECT COUNT(*) FROM funcionario) as total_funcionarios,
+    (SELECT COUNT(*) FROM produto) as total_produtos,
+    (SELECT COUNT(*) FROM fornecedor) as total_fornecedores;
