@@ -1,4 +1,4 @@
--- Criação das tabelas
+/*-- Criação das tabelas
 CREATE TABLE if not exists clientes(
   	cli_id INTEGER PRIMARY KEY AUTOINCREMENT UNIQUE,
  	cli_nome VARCHAR (100) NOT NULL,
@@ -39,7 +39,7 @@ CREATE TABLE if not EXISTS funcionario(
 
 CREATE TABLE if not EXISTS fornecedor(
    forn_id_seq INTEGER PRIMARY KEY AUTOINCREMENT,
-   forn_nome VARCHAR (22) NOT NULL,
+   forn_nome_empresa VARCHAR (22) NOT NULL,
    forn_cnpj VARCHAR (18) NOT NULL,
    forn_telefone VARCHAR (14) NOT NULL,
    forn_email VARCHAR (20) NOT NULL,
@@ -60,7 +60,10 @@ CREATE TABLE if not EXISTS fornecedor(
 	prod_id_seq INTEGER PRIMARY KEY AUTOINCREMENT,
     forn_id INTEGER,
  	prod_nome VARCHAR (50) NOT NULL,
-    prod_descricao VARCHAR (222) NOT NULL,
+    prod_codigo_barra VARCHAR (14) NOT NULL,
+    prod_categoria VARCHAR (11) NOT NULL,
+    prod_estoque_atual VARCHAR (3) NOT NULL,
+    prod_descricao VARCHAR (500) NOT NULL,
     prod_quantidade_minima VARCHAR (24) NOT NULL,
     prod_preco_anterior VARCHAR (17) NOT NULL,
     prod_preco_atual VARCHAR (19) NOT NULL,
@@ -161,4 +164,11 @@ INSERT INTO produto (
 (4, 'Soro Fisiológico 250ml', 'Soro Fisiológico 0,9% - 250ml - Uso nasal e ocular', '60', '4.90', '4.20', '4.55', '2024-03-10', 'LOTE007'),
 (4, 'Álcool 70% - 1L', 'Álcool Etílico Hidratado 70% - Antisséptico - Frasco 1 litro', '45', '12.90', '11.90', '12.40', '2024-03-15', 'LOTE008'),
 (5, 'Ibuprofeno 600mg', 'Ibuprofeno 600mg - Anti-inflamatório - Caixa com 10 comprimidos', '30', '16.90', '15.20', '16.05', '2024-04-01', 'LOTE009'),
-(5, 'Termômetro Digital', 'Termômetro Digital - Medição em 60 segundos - À prova d`água', '15', '35.90', '32.50', '34.20', '2024-04-10', 'LOTE010');
+(5, 'Termômetro Digital', 'Termômetro Digital - Medição em 60 segundos - À prova d`água', '15', '35.90', '32.50', '34.20', '2024-04-10', 'LOTE010');*/
+
+
+SELECT * FROM clientes;
+SELECT * FROM fornecedor;
+SELECT * FROM endereço;
+SELECT * FROM funcionario;
+SELECT * FROM produto;
