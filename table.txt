@@ -1,8 +1,9 @@
-/*-- Criação das tabelas
+-- Criação das tabelas
 CREATE TABLE if not exists clientes(
   	cli_id INTEGER PRIMARY KEY AUTOINCREMENT UNIQUE,
  	cli_nome VARCHAR (100) NOT NULL,
   	cli_cpf VARCHAR (14) NOT NULL UNIQUE,
+  	cli_telefone VARCHAR (14) NOT NULL UNIQUE,
   	cli_email VARCHAR (100) NOT NULL
  );
   
@@ -15,11 +16,33 @@ CREATE TABLE if not EXISTS funcionario(
   	func_cargo VARCHAR (50) NOT NULL,
   	func_salario VARCHAR (10) NOT NULL
 );
+
+CREATE TABLE if not EXISTS fornecedor(
+   forn_id_seq INTEGER PRIMARY KEY AUTOINCREMENT,
+   forn_nome_empresa VARCHAR (22) NOT NULL,
+   forn_cnpj VARCHAR (18) NOT NULL,
+   forn_telefone VARCHAR (14) NOT NULL,
+   forn_email VARCHAR (20) NOT NULL,
+   /*forn_cep VARCHAR (9) NOT NULL,
+   forn_logradouro VARCHAR (12) NOT NULL,
+   forn_numero VARCHAR (4) NOT NULL,
+   forn_complemento VARCHAR (8) NOT NULL,
+   forn_bairro VARCHAR (9) NOT NULL,
+   forn_cidade VARCHAR (8) NOT NULL,
+   forn_estado VARCHAR (2) NOT NULL,*/
+   forn_contato_nome VARCHAR (22) NOT NULL,
+   forn_contato_cargo VARCHAR (17) NOT NULL,
+   forn_contato_telefone VARCHAR (14) NOT NULL,
+   forn_contato_email VARCHAR (20) NOT NULL
+ );
+
+
   
  CREATE TABLE IF NOT EXISTS endereço(
    end_id INTEGER PRIMARY KEY AUTOINCREMENT UNIQUE,
    cli_id INTEGER,
    func_id INTEGER,
+   forn_id INTEGER,
    end_cep VARCHAR (8) NOT NULL,
    end_logradouro VARCHAR (50) NOT NULL,
    end_numero VARCHAR (5) not NULL,
@@ -37,24 +60,6 @@ CREATE TABLE if not EXISTS funcionario(
     FOREIGN KEY (cli_id) REFERENCES clientes(cli_id)
 );
 
-CREATE TABLE if not EXISTS fornecedor(
-   forn_id_seq INTEGER PRIMARY KEY AUTOINCREMENT,
-   forn_nome_empresa VARCHAR (22) NOT NULL,
-   forn_cnpj VARCHAR (18) NOT NULL,
-   forn_telefone VARCHAR (14) NOT NULL,
-   forn_email VARCHAR (20) NOT NULL,
-   forn_cep VARCHAR (9) NOT NULL,
-   forn_logradouro VARCHAR (12) NOT NULL,
-   forn_numero VARCHAR (4) NOT NULL,
-   forn_complemento VARCHAR (8) NOT NULL,
-   forn_bairro VARCHAR (9) NOT NULL,
-   forn_cidade VARCHAR (8) NOT NULL,
-   forn_estado VARCHAR (2) NOT NULL,
-   forn_contato_nome VARCHAR (22) NOT NULL,
-   forn_contato_cargo VARCHAR (17) NOT NULL,
-   forn_contato_telefone VARCHAR (14) NOT NULL,
-   forn_contato_email VARCHAR (20) NOT NULL
- );
 
  CREATE TABLE if not EXISTS produto(
 	prod_id_seq INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -63,13 +68,13 @@ CREATE TABLE if not EXISTS fornecedor(
     prod_codigo_barra VARCHAR (14) NOT NULL,
     prod_categoria VARCHAR (11) NOT NULL,
     prod_estoque_atual VARCHAR (3) NOT NULL,
-    prod_descricao VARCHAR (500) NOT NULL,
-    prod_quantidade_minima VARCHAR (24) NOT NULL,
-    prod_preco_anterior VARCHAR (17) NOT NULL,
+    prod_quantidade_minima VARCHAR (24) NOT NULL, /*VER SE É PARA ADD NA TELA OU NÃO, COM O DAFFARA*/
+    prod_preco_anterior VARCHAR (17) NOT NULL, /*MESMA COISA*/
     prod_preco_atual VARCHAR (19) NOT NULL,
-    prod_preco_medio VARCHAR (16) NOT NULL,
-    prod_data_cadastro VARCHAR (12) NOT NULL,
-    prod_empenho VARCHAR (34) NOT NULL,
+    prod_preco_medio VARCHAR (16) NOT NULL, /*MESMA COISA*/
+    prod_data_cadastro VARCHAR (12) NOT NULL, /*IGUAL*/
+    prod_empenho VARCHAR (34) NOT NULL, /*TAMBÉM*/
+   	prod_descricao VARCHAR (500) NOT NULL,
    FOREIGN key (forn_id) REFERENCES fornecedor(forn_id_seq)
  );
 
@@ -77,17 +82,17 @@ CREATE TABLE if not EXISTS fornecedor(
 
 -- FORNECEDORES
 INSERT INTO fornecedor(
-   forn_nome,
+   forn_nome_empresa
    forn_cnpj,
    forn_telefone,
    forn_email,
-   forn_cep,
+   forn_cep, /*VER COM O DAFFARA*/
    forn_logradouro,
    forn_numero,
    forn_complemento,
    forn_bairro,
    forn_cidade,
-   forn_estado,
+   forn_estado, /*ATÉ AQUI*/
    forn_contato_nome,
    forn_contato_cargo,
    forn_contato_telefone,
@@ -147,13 +152,16 @@ INSERT INTO telefone (cli_id, tel_numero) VALUES
 INSERT INTO produto (
     forn_id,
     prod_nome,
-    prod_descricao,
-    prod_quantidade_minima,
+  	prod_codigo_barra,
+  	prod_categoria,
+  	prod_estoque_atual,
+    prod_quantidade_minima, /*VER COM ELE*/
     prod_preco_anterior,
-    prod_preco_atual,
+    prod_preco_atual, /*MENOS ESSE*/
     prod_preco_medio,
     prod_data_cadastro,
-    prod_empenho
+  	prod_empenho, /*ATÉ AQUI*/
+  	prod_descricao
 ) VALUES
 (1, 'Paracetamol 500mg', 'Paracetamol 500mg - Analgésico e antipirético - Caixa com 20 comprimidos', '50', '8.90', '7.50', '8.20', '2024-01-15', 'LOTE001'),
 (1, 'Dipirona 500mg', 'Dipirona Sódica 500mg - Analgésico e antitérmico - Caixa com 10 comprimidos', '30', '12.90', '11.50', '12.20', '2024-01-20', 'LOTE002'),
@@ -164,11 +172,11 @@ INSERT INTO produto (
 (4, 'Soro Fisiológico 250ml', 'Soro Fisiológico 0,9% - 250ml - Uso nasal e ocular', '60', '4.90', '4.20', '4.55', '2024-03-10', 'LOTE007'),
 (4, 'Álcool 70% - 1L', 'Álcool Etílico Hidratado 70% - Antisséptico - Frasco 1 litro', '45', '12.90', '11.90', '12.40', '2024-03-15', 'LOTE008'),
 (5, 'Ibuprofeno 600mg', 'Ibuprofeno 600mg - Anti-inflamatório - Caixa com 10 comprimidos', '30', '16.90', '15.20', '16.05', '2024-04-01', 'LOTE009'),
-(5, 'Termômetro Digital', 'Termômetro Digital - Medição em 60 segundos - À prova d`água', '15', '35.90', '32.50', '34.20', '2024-04-10', 'LOTE010');*/
+(5, 'Termômetro Digital', 'Termômetro Digital - Medição em 60 segundos - À prova d`água', '15', '35.90', '32.50', '34.20', '2024-04-10', 'LOTE010');
 
-
+/*
 SELECT * FROM clientes;
 SELECT * FROM fornecedor;
 SELECT * FROM endereço;
 SELECT * FROM funcionario;
-SELECT * FROM produto;
+SELECT * FROM produto;*/
