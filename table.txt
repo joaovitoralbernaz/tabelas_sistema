@@ -1,44 +1,6 @@
+-- Criação das tabelas
+
 CREATE TABLE IF NOT EXISTS clientes(
-    cli_id INTEGER PRIMARY KEY AUTOINCREMENT,
-    cli_nome VARCHAR(100) NOT NULL,
-    cli_cpf VARCHAR(14) NOT NULL UNIQUE,
-    cli_email VARCHAR(100) NOT NULL
-);
-
-CREATE TABLE IF NOT EXISTS funcionario(
-    func_id INTEGER PRIMARY KEY AUTOINCREMENT,
-    func_nome VARCHAR(100) NOT NULL,
-    func_cpf VARCHAR(14) NOT NULL UNIQUE,
-    func_telefone VARCHAR(11) NOT NULL,
-    func_email VARCHAR(100) NOT NULL,
-    func_cargo VARCHAR(50) NOT NULL,
-    func_salario DECIMAL(10,2) NOT NULL
-);
-
-CREATE TABLE IF NOT EXISTS fornecedor(
-    forn_id_seq INTEGER PRIMARY KEY AUTOINCREMENT,
-    forn_nome_empresa VARCHAR(50) NOT NULL,
-    forn_cnpj VARCHAR(18) NOT NULL,
-    forn_telefone VARCHAR(14) NOT NULL,
-    forn_email VARCHAR(50) NOT NULL,
-    forn_contato_nome VARCHAR(50) NOT NULL,
-    forn_contato_cargo VARCHAR(30) NOT NULL,
-    forn_contato_telefone VARCHAR(14) NOT NULL,
-    forn_contato_email VARCHAR(50) NOT NULL
-);
-
-CREATE TABLE IF NOT EXISTS endereco(
-    end_id INTEGER PRIMARY KEY AUTOINCREMENT,
-    cli_id INTEGER,
-    func_id INTEGER,
-    forn_id INTEGER,
-    end_cep VARCHAR(9) NOT NULL,
-    end_logradouro VARCHAR(50) NOT NULL,
-    end_numero VARCHAR(5) NOT NULL,CREATE TABLE IF NOT EXISTS clientes(
-    cli_id INTEGER PRIMARY KEY AUTOINCREMENT,
-    cli_nome VARCHAR(100) NOT NULL,
-    cli_cpf VARCHAR(14) NOT NULL UNIQUE,
-    cli_telefone VARCHAR(14) NOT NULL UNIQUE,CREATE TABLE IF NOT EXISTS clientes(
     cli_id INTEGER PRIMARY KEY AUTOINCREMENT,
     cli_nome VARCHAR(100) NOT NULL,
     cli_cpf VARCHAR(14) NOT NULL UNIQUE,
@@ -109,133 +71,6 @@ CREATE TABLE IF NOT EXISTS produto(
     FOREIGN KEY (forn_id) REFERENCES fornecedor(forn_id_seq)
 );
 
-CREATE TABLE IF NOT EXISTS vendas(
-    venda_id INTEGER PRIMARY KEY AUTOINCREMENT,
-    cli_id INTEGER NOT NULL,
-    prod_id INTEGER NOT NULL,
-    venda_qtd INTEGER NOT NULL,
-    venda_data DATE NOT NULL,
-    venda_valor_unitario DECIMAL(10,2) NOT NULL,
-    venda_valor_total DECIMAL(10,2) NOT NULL,
-    FOREIGN KEY (cli_id) REFERENCES clientes(cli_id),
-    FOREIGN KEY (prod_id) REFERENCES produto(prod_id_seq)
-);
-
--- Inserção de dados
-
-    cli_email VARCHAR(100) NOT NULL
-);
-
-CREATE TABLE IF NOT EXISTS funcionario(
-    func_id INTEGER PRIMARY KEY AUTOINCREMENT,
-    func_nome VARCHAR(100) NOT NULL,
-    func_cpf VARCHAR(14) NOT NULL UNIQUE,
-    func_telefone VARCHAR(11) NOT NULL,
-    func_email VARCHAR(100) NOT NULL,
-    func_cargo VARCHAR(50) NOT NULL,
-    func_salario DECIMAL(10,2) NOT NULL
-);
-
-CREATE TABLE IF NOT EXISTS fornecedor(
-    forn_id_seq INTEGER PRIMARY KEY AUTOINCREMENT,
-    forn_nome_empresa VARCHAR(50) NOT NULL,
-    forn_cnpj VARCHAR(18) NOT NULL,
-    forn_telefone VARCHAR(14) NOT NULL,
-    forn_email VARCHAR(50) NOT NULL,
-    forn_contato_nome VARCHAR(50) NOT NULL,
-    forn_contato_cargo VARCHAR(30) NOT NULL,
-    forn_contato_telefone VARCHAR(14) NOT NULL,
-    forn_contato_email VARCHAR(50) NOT NULL
-);
-
-CREATE TABLE IF NOT EXISTS endereco(
-    end_id INTEGER PRIMARY KEY AUTOINCREMENT,
-    cli_id INTEGER,
-    func_id INTEGER,
-    forn_id INTEGER,
-    end_cep VARCHAR(9) NOT NULL,
-    end_logradouro VARCHAR(50) NOT NULL,
-    end_numero VARCHAR(5) NOT NULL,
-    end_complemento VARCHAR(20),
-    end_bairro VARCHAR(30) NOT NULL,
-    end_cidade VARCHAR(20) NOT NULL,
-    end_estado VARCHAR(2) NOT NULL,
-    FOREIGN KEY (cli_id) REFERENCES clientes(cli_id),
-    FOREIGN KEY (func_id) REFERENCES funcionario(func_id),
-    FOREIGN KEY (forn_id) REFERENCES fornecedor(forn_id_seq)
-);
-
-CREATE TABLE IF NOT EXISTS telefone(
-    tel_id INTEGER PRIMARY KEY AUTOINCREMENT,
-    cli_id INTEGER NOT NULL,
-    tel_numero VARCHAR(15) NOT NULL,
-    FOREIGN KEY (cli_id) REFERENCES clientes(cli_id)
-);
-
-CREATE TABLE IF NOT EXISTS produto(
-    prod_id_seq INTEGER PRIMARY KEY AUTOINCREMENT,
-    forn_id INTEGER,
-    prod_nome VARCHAR(50) NOT NULL,
-    prod_codigo_barra VARCHAR(20) NOT NULL,
-    prod_categoria VARCHAR(30) NOT NULL,
-    prod_estoque_atual INTEGER NOT NULL,
-    prod_quantidade_minima INTEGER NOT NULL,
-    prod_preco_anterior DECIMAL(10,2) NOT NULL,
-    prod_preco_atual DECIMAL(10,2) NOT NULL,
-    prod_preco_medio DECIMAL(10,2) NOT NULL,
-    prod_data_cadastro DATE NOT NULL,
-    prod_empenho VARCHAR(50) NOT NULL,
-    prod_descricao TEXT NOT NULL,
-    FOREIGN KEY (forn_id) REFERENCES fornecedor(forn_id_seq)
-);
-
-CREATE TABLE IF NOT EXISTS vendas(
-    venda_id INTEGER PRIMARY KEY AUTOINCREMENT,
-    cli_id INTEGER NOT NULL,
-    prod_id INTEGER NOT NULL,
-    venda_qtd INTEGER NOT NULL,
-    venda_data DATE NOT NULL,
-    venda_valor_unitario DECIMAL(10,2) NOT NULL,
-    venda_valor_total DECIMAL(10,2) NOT NULL,
-    FOREIGN KEY (cli_id) REFERENCES clientes(cli_id),
-    FOREIGN KEY (prod_id) REFERENCES produto(prod_id_seq)
-);
-
--- Inserção de dados
-
-    end_complemento VARCHAR(20),
-    end_bairro VARCHAR(30) NOT NULL,
-    end_cidade VARCHAR(20) NOT NULL,
-    end_estado VARCHAR(2) NOT NULL,
-    FOREIGN KEY (cli_id) REFERENCES clientes(cli_id),
-    FOREIGN KEY (func_id) REFERENCES funcionario(func_id),
-    FOREIGN KEY (forn_id) REFERENCES fornecedor(forn_id_seq)
-);
-
-CREATE TABLE IF NOT EXISTS telefone(
-    tel_id INTEGER PRIMARY KEY AUTOINCREMENT,
-    cli_id INTEGER NOT NULL,
-    tel_numero VARCHAR(15) NOT NULL,
-    FOREIGN KEY (cli_id) REFERENCES clientes(cli_id)
-);
-
-CREATE TABLE IF NOT EXISTS produto(
-    prod_id_seq INTEGER PRIMARY KEY AUTOINCREMENT,
-    forn_id INTEGER,
-    prod_nome VARCHAR(50) NOT NULL,
-    prod_codigo_barra VARCHAR(20) NOT NULL,
-    prod_categoria VARCHAR(30) NOT NULL,
-    prod_estoque_atual INTEGER NOT NULL,
-    prod_quantidade_minima INTEGER NOT NULL,
-    prod_preco_anterior DECIMAL(10,2) NOT NULL,
-    prod_preco_atual DECIMAL(10,2) NOT NULL,
-    prod_preco_medio DECIMAL(10,2) NOT NULL,
-    prod_data_cadastro DATE NOT NULL,
-    prod_empenho VARCHAR(50) NOT NULL,
-    prod_descricao TEXT NOT NULL,
-    FOREIGN KEY (forn_id) REFERENCES fornecedor(forn_id_seq)
-);
-
 -- Inserção de dados
 
 -- FORNECEDORES
@@ -256,15 +91,15 @@ INSERT INTO fornecedor(
 ('Drogacentral', '56.789.012/0001-34', '31543210987', 'comercial@drogacent.br', 'Carlos Lima', 'Representante', '31543210988', 'carlos@drogacent.br');
 
 -- CLIENTES
-INSERT INTO clientes (cli_nome, cli_cpf, cli_email) VALUES
-('Ana Maria Silva', '123.456.789-01', 'ana.silva@email.com'),
-('João Pedro Santos', '234.567.890-12','joao.santos@email.com'),
-('Maria Fernanda Costa', '345.678.901-23','maria.costa@email.com'),
-('Carlos Eduardo Lima', '456.789.012-34','carlos.lima@email.com'),
-('Fernanda Oliveira', '567.890.123-45', 'fernanda.oliveira@email.com'),
-('Roberto Silva Junior', '678.901.234-56', 'roberto.junior@email.com'),
-('Patrícia Mendes', '789.012.345-67', 'patricia.mendes@email.com'),
-('Rafael Almeida', '890.123.456-78', 'rafael.almeida@email.com');
+INSERT INTO clientes (cli_nome, cli_cpf, cli_telefone, cli_email) VALUES
+('Ana Maria Silva', '123.456.789-01', '11987654300', 'ana.silva@email.com'),
+('João Pedro Santos', '234.567.890-12', '21876543200', 'joao.santos@email.com'),
+('Maria Fernanda Costa', '345.678.901-23', '31765432100', 'maria.costa@email.com'),
+('Carlos Eduardo Lima', '456.789.012-34', '41654321000', 'carlos.lima@email.com'),
+('Fernanda Oliveira', '567.890.123-45', '85543210900', 'fernanda.oliveira@email.com'),
+('Roberto Silva Junior', '678.901.234-56', '11432109800', 'roberto.junior@email.com'),
+('Patrícia Mendes', '789.012.345-67', '11321098700', 'patricia.mendes@email.com'),
+('Rafael Almeida', '890.123.456-78', '21210987600', 'rafael.almeida@email.com');
 
 -- FUNCIONÁRIOS
 INSERT INTO funcionario (func_nome, func_cpf, func_telefone, func_email, func_cargo, func_salario) VALUES
@@ -323,9 +158,4 @@ INSERT INTO produto (
 (4, 'Soro Fisiológico 250ml', '7891234567896', 'Solução', 60, 20, 4.90, 4.20, 4.55, '2024-03-10', 'LOTE007', 'Soro Fisiológico 0,9% - 250ml - Uso nasal e ocular'),
 (4, 'Álcool 70% - 1L', '7891234567897', 'Antisséptico', 45, 15, 12.90, 11.90, 12.40, '2024-03-15', 'LOTE008', 'Álcool Etílico Hidratado 70% - Antisséptico - Frasco 1 litro'),
 (5, 'Ibuprofeno 600mg', '7891234567898', 'Anti-inflamatório', 30, 8, 16.90, 15.20, 16.05, '2024-04-01', 'LOTE009', 'Ibuprofeno 600mg - Anti-inflamatório - Caixa com 10 comprimidos'),
-(5, 'Termômetro Digital', '7891234567899', 'EquipamAna Maria Silva'ento', 15, 3, 35.90, 32.50, 34.20, '2024-04-10', 'LOTE010', 'Termômetro Digital - Medição em 60 segundos - À prova d água');
-
-SELECT p.prod_nome ,f.forn_nome_empresa
-FROM fornecedor f
-INNER JOIN produto p ON p.prod_id_seq = p.prod_id_seq
-WHERE p.prod_nome = 'Paracetamol 500mg';
+(5, 'Termômetro Digital', '7891234567899', 'Equipamento', 15, 3, 35.90, 32.50, 34.20, '2024-04-10', 'LOTE010', 'Termômetro Digital - Medição em 60 segundos - À prova d água');
