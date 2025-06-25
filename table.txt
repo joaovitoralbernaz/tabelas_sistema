@@ -1,5 +1,3 @@
--- Criação das tabelas
-
 CREATE TABLE IF NOT EXISTS clientes(
     cli_id INTEGER PRIMARY KEY AUTOINCREMENT,
     cli_nome VARCHAR(100) NOT NULL,
@@ -159,9 +157,3 @@ INSERT INTO produto (
 (4, 'Álcool 70% - 1L', '7891234567897', 'Antisséptico', 45, 15, 12.90, 11.90, 12.40, '2024-03-15', 'LOTE008', 'Álcool Etílico Hidratado 70% - Antisséptico - Frasco 1 litro'),
 (5, 'Ibuprofeno 600mg', '7891234567898', 'Anti-inflamatório', 30, 8, 16.90, 15.20, 16.05, '2024-04-01', 'LOTE009', 'Ibuprofeno 600mg - Anti-inflamatório - Caixa com 10 comprimidos'),
 (5, 'Termômetro Digital', '7891234567899', 'Equipamento', 15, 3, 35.90, 32.50, 34.20, '2024-04-10', 'LOTE010', 'Termômetro Digital - Medição em 60 segundos - À prova d água');
-/*
-SELECT * FROM clientes;
-SELECT * FROM fornecedor;
-SELECT * FROM endereço;
-SELECT * FROM funcionario;
-SELECT * FROM produto;/*
