@@ -69,6 +69,18 @@ CREATE TABLE IF NOT EXISTS produto(
     FOREIGN KEY (forn_id) REFERENCES fornecedor(forn_id_seq)
 );
 
+CREATE TABLE IF NOT EXISTS vendas(
+    venda_id INTEGER PRIMARY KEY AUTOINCREMENT,
+    cli_id INTEGER NOT NULL,
+    prod_id INTEGER NOT NULL,
+    venda_qtd INTEGER NOT NULL,
+    venda_data DATE NOT NULL,
+    venda_valor_unitario DECIMAL(10,2) NOT NULL,
+    venda_valor_total DECIMAL(10,2) NOT NULL,
+    FOREIGN KEY (cli_id) REFERENCES clientes(cli_id),
+    FOREIGN KEY (prod_id) REFERENCES produto(prod_id_seq)
+);
+
 -- Inserção de dados
 
 -- FORNECEDORES
@@ -157,3 +169,17 @@ INSERT INTO produto (
 (4, 'Álcool 70% - 1L', '7891234567897', 'Antisséptico', 45, 15, 12.90, 11.90, 12.40, '2024-03-15', 'LOTE008', 'Álcool Etílico Hidratado 70% - Antisséptico - Frasco 1 litro'),
 (5, 'Ibuprofeno 600mg', '7891234567898', 'Anti-inflamatório', 30, 8, 16.90, 15.20, 16.05, '2024-04-01', 'LOTE009', 'Ibuprofeno 600mg - Anti-inflamatório - Caixa com 10 comprimidos'),
 (5, 'Termômetro Digital', '7891234567899', 'Equipamento', 15, 3, 35.90, 32.50, 34.20, '2024-04-10', 'LOTE010', 'Termômetro Digital - Medição em 60 segundos - À prova d água');
+
+INSERT INTO vendas (
+    cli_id,
+    prod_id,
+    venda_qtd,
+    venda_data,
+    venda_valor_unitario,
+    venda_valor_total
+) VALUES
+(1, 1, 2, '2024-03-01', 9.20, 18.40),
+(2, 2, 1, '2024-03-02', 7.50, 7.50),
+(3, 3, 3, '2024-03-03', 13.50, 40.50),
+(4, 4, 1, '2024-03-04', 16.80, 16.80),
+(5, 5, 2, '2024-03-05', 20.00, 40.00);
