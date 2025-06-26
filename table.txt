@@ -4,7 +4,6 @@ CREATE TABLE IF NOT EXISTS clientes(
     cli_id INTEGER PRIMARY KEY AUTOINCREMENT,
     cli_nome VARCHAR(100) NOT NULL,
     cli_cpf VARCHAR(14) NOT NULL UNIQUE,
-    cli_telefone VARCHAR(14) NOT NULL UNIQUE,
     cli_email VARCHAR(100) NOT NULL
 );
 
@@ -12,7 +11,6 @@ CREATE TABLE IF NOT EXISTS funcionario(
     func_id INTEGER PRIMARY KEY AUTOINCREMENT,
     func_nome VARCHAR(100) NOT NULL,
     func_cpf VARCHAR(14) NOT NULL UNIQUE,
-    func_telefone VARCHAR(11) NOT NULL,
     func_email VARCHAR(100) NOT NULL,
     func_cargo VARCHAR(50) NOT NULL,
     func_salario DECIMAL(10,2) NOT NULL
@@ -22,7 +20,6 @@ CREATE TABLE IF NOT EXISTS fornecedor(
     forn_id_seq INTEGER PRIMARY KEY AUTOINCREMENT,
     forn_nome_empresa VARCHAR(50) NOT NULL,
     forn_cnpj VARCHAR(18) NOT NULL,
-    forn_telefone VARCHAR(14) NOT NULL,
     forn_email VARCHAR(50) NOT NULL,
     forn_contato_nome VARCHAR(50) NOT NULL,
     forn_contato_cargo VARCHAR(30) NOT NULL,
@@ -34,7 +31,7 @@ CREATE TABLE IF NOT EXISTS endereco(
     end_id INTEGER PRIMARY KEY AUTOINCREMENT,
     cli_id INTEGER,
     func_id INTEGER,
-    forn_id INTEGER,
+    forn_id_seq INTEGER,
     end_cep VARCHAR(9) NOT NULL,
     end_logradouro VARCHAR(50) NOT NULL,
     end_numero VARCHAR(5) NOT NULL,
@@ -44,7 +41,7 @@ CREATE TABLE IF NOT EXISTS endereco(
     end_estado VARCHAR(2) NOT NULL,
     FOREIGN KEY (cli_id) REFERENCES clientes(cli_id),
     FOREIGN KEY (func_id) REFERENCES funcionario(func_id),
-    FOREIGN KEY (forn_id) REFERENCES fornecedor(forn_id_seq)
+    FOREIGN KEY (forn_id__seq) REFERENCES fornecedor(forn_id_seq)
 );
 
 CREATE TABLE IF NOT EXISTS telefone(
@@ -52,6 +49,20 @@ CREATE TABLE IF NOT EXISTS telefone(
     cli_id INTEGER NOT NULL,
     tel_numero VARCHAR(15) NOT NULL,
     FOREIGN KEY (cli_id) REFERENCES clientes(cli_id)
+);
+
+CREATE TABLE IF NOT EXISTS telefone_funcionario(
+    tel_id INTEGER PRIMARY KEY AUTOINCREMENT,
+    func_id INTEGER NOT NULL,
+    tel_numero VARCHAR(15) NOT NULL,
+    FOREIGN KEY (func_id) REFERENCES funcionario(func_id)
+);
+
+CREATE TABLE IF NOT EXISTS telefone_fornecedor(
+    tel_id INTEGER PRIMARY KEY AUTOINCREMENT,
+    forn_id INTEGER NOT NULL,
+    tel_numero VARCHAR(15) NOT NULL,
+    FOREIGN KEY (forn_id) REFERENCES fornecedor(forn_id)
 );
 
 CREATE TABLE IF NOT EXISTS produto(
@@ -66,7 +77,9 @@ CREATE TABLE IF NOT EXISTS produto(
     prod_preco_atual DECIMAL(10,2) NOT NULL,
     prod_preco_medio DECIMAL(10,2) NOT NULL,
     prod_data_cadastro DATE NOT NULL,
-    prod_empenho VARCHAR(50) NOT NULL,
+  	prod_empenho VARCHAR(50) NOT NULL,
+    prod_registro VARCHAR(40) NOT NULL,
+  	prod_lote VARCHAR(10) NOT NULL,
     prod_descricao TEXT NOT NULL,
     FOREIGN KEY (forn_id) REFERENCES fornecedor(forn_id_seq)
 );
@@ -77,38 +90,37 @@ CREATE TABLE IF NOT EXISTS produto(
 INSERT INTO fornecedor(
     forn_nome_empresa,
     forn_cnpj,
-    forn_telefone,
     forn_email,
     forn_contato_nome,
     forn_contato_cargo,
     forn_contato_telefone,
     forn_contato_email
 ) VALUES 
-('FarmaDistrib SA', '12.345.678/0001-90', '11987654321', 'vendas@farmadist.com', 'João Silva', 'Gerente Vendas', '11987654322', 'joao@farmadist.com'),
-('MediSupply Ltd', '23.456.789/0001-01', '21876543210', 'contato@medisup.br', 'Maria Santos', 'Diretora Comercial', '21876543211', 'maria@medisup.br'),
-('PharmaMax Dis', '34.567.890/0001-12', '85765432109', 'vendas@pharmamax.com', 'Pedro Costa', 'Consultor Farmac', '85765432110', 'pedro@pharmamax.com'),
-('BioMed Brasil', '45.678.901/0001-23', '41654321098', 'info@biomedbr.br', 'Ana Oliveira', 'Farmacêutica', '41654321099', 'ana@biomedbr.br'),
-('Drogacentral', '56.789.012/0001-34', '31543210987', 'comercial@drogacent.br', 'Carlos Lima', 'Representante', '31543210988', 'carlos@drogacent.br');
+('FarmaDistrib SA', '12.345.678/0001-90', 'vendas@farmadist.com', 'João Silva', 'Gerente Vendas', '11987654322', 'joao@farmadist.com'),
+('MediSupply Ltd', '23.456.789/0001-01', 'contato@medisup.br', 'Maria Santos', 'Diretora Comercial', '21876543211', 'maria@medisup.br'),
+('PharmaMax Dis', '34.567.890/0001-12', 'vendas@pharmamax.com', 'Pedro Costa', 'Consultor Farmac', '85765432110', 'pedro@pharmamax.com'),
+('BioMed Brasil', '45.678.901/0001-23', 'info@biomedbr.br', 'Ana Oliveira', 'Farmacêutica', '41654321099', 'ana@biomedbr.br'),
+('Drogacentral', '56.789.012/0001-34', 'comercial@drogacent.br', 'Carlos Lima', 'Representante', '31543210988', 'carlos@drogacent.br');
 
 -- CLIENTES
-INSERT INTO clientes (cli_nome, cli_cpf, cli_telefone, cli_email) VALUES
-('Ana Maria Silva', '123.456.789-01', '11987654300', 'ana.silva@email.com'),
-('João Pedro Santos', '234.567.890-12', '21876543200', 'joao.santos@email.com'),
-('Maria Fernanda Costa', '345.678.901-23', '31765432100', 'maria.costa@email.com'),
-('Carlos Eduardo Lima', '456.789.012-34', '41654321000', 'carlos.lima@email.com'),
-('Fernanda Oliveira', '567.890.123-45', '85543210900', 'fernanda.oliveira@email.com'),
-('Roberto Silva Junior', '678.901.234-56', '11432109800', 'roberto.junior@email.com'),
-('Patrícia Mendes', '789.012.345-67', '11321098700', 'patricia.mendes@email.com'),
-('Rafael Almeida', '890.123.456-78', '21210987600', 'rafael.almeida@email.com');
+INSERT INTO clientes (cli_nome, cli_cpf, cli_email) VALUES
+('Ana Maria Silva', '123.456.789-01', 'ana.silva@email.com'),
+('João Pedro Santos', '234.567.890-12', 'joao.santos@email.com'),
+('Maria Fernanda Costa', '345.678.901-23', 'maria.costa@email.com'),
+('Carlos Eduardo Lima', '456.789.012-34', 'carlos.lima@email.com'),
+('Fernanda Oliveira', '567.890.123-45', 'fernanda.oliveira@email.com'),
+('Roberto Silva Junior', '678.901.234-56', 'roberto.junior@email.com'),
+('Patrícia Mendes', '789.012.345-67', 'patricia.mendes@email.com'),
+('Rafael Almeida', '890.123.456-78', 'rafael.almeida@email.com');
 
 -- FUNCIONÁRIOS
-INSERT INTO funcionario (func_nome, func_cpf, func_telefone, func_email, func_cargo, func_salario) VALUES
-('Dr. Lucas Ferreira', '111.222.333-44', '11999888777', 'lucas.ferreira@farmacia.com', 'Farmacêutico Responsável', 8500.00),
-('Juliana Rodrigues', '222.333.444-55', '11888777666', 'juliana.rodrigues@farmacia.com', 'Balconista Senior', 3200.00),
-('Bruno Machado', '333.444.555-66', '11777666555', 'bruno.machado@farmacia.com', 'Auxiliar de Farmácia', 2800.00),
-('Camila Souza', '444.555.666-77', '11666555444', 'camila.souza@farmacia.com', 'Caixa', 2400.00),
-('Diego Martins', '555.666.777-88', '11555444333', 'diego.martins@farmacia.com', 'Atendente', 2200.00),
-('Dra. Larissa Pereira', '666.777.888-99', '11444333222', 'larissa.pereira@farmacia.com', 'Farmacêutica', 7500.00);
+INSERT INTO funcionario (func_nome, func_cpf, func_email, func_cargo, func_salario) VALUES
+('Dr. Lucas Ferreira', '111.222.333-44', 'lucas.ferreira@farmacia.com', 'Farmacêutico Responsável', 8500.00),
+('Juliana Rodrigues', '222.333.444-55', 'juliana.rodrigues@farmacia.com', 'Balconista Senior', 3200.00),
+('Bruno Machado', '333.444.555-66', 'bruno.machado@farmacia.com', 'Auxiliar de Farmácia', 2800.00),
+('Camila Souza', '444.555.666-77', 'camila.souza@farmacia.com', 'Caixa', 2400.00),
+('Diego Martins', '555.666.777-88', 'diego.martins@farmacia.com', 'Atendente', 2200.00),
+('Dra. Larissa Pereira', '666.777.888-99', 'larissa.pereira@farmacia.com', 'Farmacêutica', 7500.00);
 
 -- ENDEREÇOS (para clientes e funcionários)
 INSERT INTO endereco (cli_id, func_id, end_cep, end_logradouro, end_numero, end_complemento, end_bairro, end_cidade, end_estado) VALUES
@@ -134,6 +146,33 @@ INSERT INTO telefone (cli_id, tel_numero) VALUES
 (7, '11321098765'),
 (8, '21210987654');
 
+-- TELEFONES (para funcionario)
+INSERT INTO telefone_funcionario (func_id, tel_numero) VALUES
+(1, '12345678901'),
+(1, '09876543210'),
+(2, '57420138329'),
+(3, '89566974348'),
+(3, '32144858547'),
+(4, '85652365896'),
+(5, '98765432345'),
+(6, '67443576459'),
+(7, '88555559696'),
+(8, '55848145269');
+
+-- TELEFONES (para fornecedor)
+INSERT INTO telefone_fornecedor (forn_id, tel_numero) VALUES
+(1, '74593248598'),
+(1, '23145558558'),
+(2, '97441235588'),
+(3, '78931126525'),
+(3, '12536985656'),
+(4, '36147982522'),
+(5, '25147888554'),
+(6, '25587412697'),
+(7, '3641789+542'),
+(8, '54799314889');
+
+
 -- PRODUTOS
 INSERT INTO produto (
     forn_id,
@@ -147,6 +186,8 @@ INSERT INTO produto (
     prod_preco_medio,
     prod_data_cadastro,
     prod_empenho,
+  	prod_registro,
+    prod_lote,
     prod_descricao
 ) VALUES
 (1, 'Paracetamol 500mg', '7891234567890', 'Analgésico', 50, 10, 8.90, 7.50, 8.20, '2024-01-15', 'LOTE001', 'Paracetamol 500mg - Analgésico e antipirético - Caixa com 20 comprimidos'),
@@ -159,3 +200,220 @@ INSERT INTO produto (
 (4, 'Álcool 70% - 1L', '7891234567897', 'Antisséptico', 45, 15, 12.90, 11.90, 12.40, '2024-03-15', 'LOTE008', 'Álcool Etílico Hidratado 70% - Antisséptico - Frasco 1 litro'),
 (5, 'Ibuprofeno 600mg', '7891234567898', 'Anti-inflamatório', 30, 8, 16.90, 15.20, 16.05, '2024-04-01', 'LOTE009', 'Ibuprofeno 600mg - Anti-inflamatório - Caixa com 10 comprimidos'),
 (5, 'Termômetro Digital', '7891234567899', 'Equipamento', 15, 3, 35.90, 32.50, 34.20, '2024-04-10', 'LOTE010', 'Termômetro Digital - Medição em 60 segundos - À prova d água');
+
+-- VENDAS 
+
+CREATE TABLE IF NOT EXISTS venda (
+    venda_id INTEGER PRIMARY KEY AUTOINCREMENT,
+    cli_id INTEGER NOT NULL,
+    func_id INTEGER, -- Funcionário que realizou a venda
+    venda_data DATETIME DEFAULT CURRENT_TIMESTAMP,
+    venda_total DECIMAL(10,2) NOT NULL,
+    FOREIGN KEY (cli_id) REFERENCES clientes(cli_id),
+    FOREIGN KEY (func_id) REFERENCES funcionario(func_id)
+);
+
+CREATE TABLE IF NOT EXISTS item_venda (
+    item_id INTEGER PRIMARY KEY AUTOINCREMENT,
+    venda_id INTEGER NOT NULL,
+    prod_id_seq INTEGER NOT NULL,
+    quantidade INTEGER NOT NULL,
+    preco_unitario DECIMAL(10,2) NOT NULL,
+    subtotal DECIMAL(10,2) NOT NULL,
+    FOREIGN KEY (venda_id) REFERENCES venda(venda_id),
+    FOREIGN KEY (prod_id_seq) REFERENCES produto(prod_id_seq)
+);
+
+-- COMPRAS 
+
+CREATE TABLE IF NOT EXISTS compra (
+    compra_id INTEGER PRIMARY KEY AUTOINCREMENT,
+    forn_id INTEGER NOT NULL,
+    func_id INTEGER, -- Funcionário que registrou a compra
+    compra_data DATE DEFAULT CURRENT_DATE,
+    compra_total DECIMAL(10,2) NOT NULL,
+    FOREIGN KEY (forn_id) REFERENCES fornecedor(forn_id_seq),
+    FOREIGN KEY (func_id) REFERENCES funcionario(func_id)
+);
+
+CREATE TABLE IF NOT EXISTS item_compra (
+    item_compra_id INTEGER PRIMARY KEY AUTOINCREMENT,
+    compra_id INTEGER NOT NULL,
+    prod_id_seq INTEGER NOT NULL,
+    quantidade INTEGER NOT NULL,
+    preco_unitario DECIMAL(10,2) NOT NULL,
+    subtotal DECIMAL(10,2) NOT NULL,
+    FOREIGN KEY (compra_id) REFERENCES compra(compra_id),
+    FOREIGN KEY (prod_id_seq) REFERENCES produto(prod_id_seq)
+);
+
+-- CONSULTA 
+
+CREATE TABLE IF NOT EXISTS consulta (
+    consulta_id INTEGER PRIMARY KEY AUTOINCREMENT,
+    cli_id INTEGER NOT NULL,
+    func_id INTEGER NOT NULL, -- Funcionário que realizou a consulta
+    data_consulta DATETIME NOT NULL,
+    tipo_consulta VARCHAR(50) NOT NULL, -- Ex: "Aferição de pressão", "Consulta farmacêutica"
+    observacoes TEXT,
+    FOREIGN KEY (cli_id) REFERENCES clientes(cli_id),
+    FOREIGN KEY (func_id) REFERENCES funcionario(func_id)
+);
+
+-- TRIGGER PARA BAIXAR O ESTOQUE APOS UMA VENDA 
+
+CREATE TRIGGER IF NOT EXISTS trg_baixar_estoque_venda
+AFTER INSERT ON item_venda
+BEGIN
+    UPDATE produto
+    SET prod_estoque_atual = prod_estoque_atual - NEW.quantidade
+    WHERE prod_id_seq = NEW.prod_id_seq;
+END;
+
+-- TRIGGER (GATILHO) PARA AUMENTAR O ESTOQUE APOS UMA COMPRA 
+
+CREATE TRIGGER IF NOT EXISTS trg_repor_estoque_compra
+AFTER INSERT ON item_compra
+BEGIN
+    UPDATE produto
+    SET prod_estoque_atual = prod_estoque_atual + NEW.quantidade
+    WHERE prod_id_seq = NEW.prod_id_seq;
+END;
+
+-- ALERTAS DE ESTOQUE 
+
+CREATE TABLE IF NOT EXISTS alerta_estoque (
+    alerta_id INTEGER PRIMARY KEY AUTOINCREMENT,
+    prod_id_seq INTEGER NOT NULL,
+    data_alerta DATETIME DEFAULT CURRENT_TIMESTAMP,
+    estoque_atual INTEGER NOT NULL,
+    quantidade_minima INTEGER NOT NULL,
+    mensagem TEXT NOT NULL,
+    FOREIGN KEY (prod_id_seq) REFERENCES produto(prod_id_seq)
+);
+
+-- ALERTA DE ESTOQUE BAIXO 
+
+CREATE TRIGGER IF NOT EXISTS trg_alerta_estoque_baixo
+AFTER UPDATE ON produto
+WHEN NEW.prod_estoque_atual < NEW.prod_quantidade_minima
+BEGIN
+    INSERT INTO alerta_estoque (
+        prod_id_seq,
+        estoque_atual,
+        quantidade_minima,
+        mensagem
+    ) VALUES (
+        NEW.prod_id_seq,
+        NEW.prod_estoque_atual,
+        NEW.prod_quantidade_minima,
+        'Estoque abaixo do nível mínimo!'
+    );
+END;
+
+ALTER TABLE alerta_estoque ADD COLUMN resolvido BOOLEAN DEFAULT 0;
+
+-- VIEW PARA VER PRODUTOS COM ESTOQUE ABAIXO DO MINIMO 
+
+CREATE VIEW vw_produtos_baixo_estoque AS
+SELECT 
+    p.prod_id_seq,
+    p.prod_nome,
+    p.prod_estoque_atual,
+    p.prod_quantidade_minima,
+    f.forn_nome_empresa
+FROM produto p
+JOIN fornecedor f ON f.forn_id_seq = p.forn_id
+WHERE p.prod_estoque_atual < p.prod_quantidade_minima;
+
+-- TABELA DE RECEITAS 
+
+CREATE TABLE IF NOT EXISTS receita (
+    receita_id INTEGER PRIMARY KEY AUTOINCREMENT,
+    cli_id INTEGER NOT NULL,
+    func_id INTEGER NOT NULL, -- farmacêutico que registrou a receita
+    receita_data DATE NOT NULL,
+    receita_valida_ate DATE NOT NULL,
+    descricao TEXT NOT NULL,
+    FOREIGN KEY (cli_id) REFERENCES clientes(cli_id),
+    FOREIGN KEY (func_id) REFERENCES funcionario(func_id)
+);
+
+CREATE TABLE IF NOT EXISTS item_receita (
+    item_receita_id INTEGER PRIMARY KEY AUTOINCREMENT,
+    receita_id INTEGER NOT NULL,
+    prod_id_seq INTEGER NOT NULL,
+    quantidade INTEGER NOT NULL,
+    FOREIGN KEY (receita_id) REFERENCES receita(receita_id),
+    FOREIGN KEY (prod_id_seq) REFERENCES produto(prod_id_seq)
+);
+
+-- REGISTRO DE LOG DE MOVIMENTACAO DO ESTOQUE 
+
+CREATE TABLE IF NOT EXISTS estoque_movimentacao (
+    mov_id INTEGER PRIMARY KEY AUTOINCREMENT,
+    prod_id_seq INTEGER NOT NULL,
+    tipo_movimentacao VARCHAR(10) NOT NULL, -- 'entrada' ou 'saida'
+    quantidade INTEGER NOT NULL,
+    data_movimentacao DATETIME DEFAULT CURRENT_TIMESTAMP,
+    origem VARCHAR(50), -- ex: 'compra', 'venda', 'ajuste manual'
+    func_id INTEGER, -- funcionário responsável pela movimentação
+    FOREIGN KEY (prod_id_seq) REFERENCES produto(prod_id_seq),
+    FOREIGN KEY (func_id) REFERENCES funcionario(func_id)
+);
+
+
+-- TRIGGERS PARA ALIMENTAR AUTOMATICAMENTE O LOG 
+
+-- Ao inserir item_venda (saída)
+CREATE TRIGGER IF NOT EXISTS trg_log_saida_estoque
+AFTER INSERT ON item_venda
+BEGIN
+    INSERT INTO estoque_movimentacao(prod_id_seq, tipo_movimentacao, quantidade, origem, func_id)
+    VALUES (NEW.prod_id_seq, 'saida', NEW.quantidade, 'venda', (SELECT func_id FROM venda WHERE venda_id = NEW.venda_id));
+END;
+
+-- Ao inserir item_compra (entrada)
+CREATE TRIGGER IF NOT EXISTS trg_log_entrada_estoque
+AFTER INSERT ON item_compra
+BEGIN
+    INSERT INTO estoque_movimentacao(prod_id_seq, tipo_movimentacao, quantidade, origem, func_id)
+    VALUES (NEW.prod_id_seq, 'entrada', NEW.quantidade, 'compra', (SELECT func_id FROM compra WHERE compra_id = NEW.compra_id));
+END;
+
+-- VIEWS / RELATORIOS PARA ANALISE 
+
+-- Produtos mais vendidos
+CREATE VIEW vw_produtos_mais_vendidos AS
+SELECT
+    p.prod_id_seq,
+    p.prod_nome,
+    SUM(iv.quantidade) AS total_vendido
+FROM item_venda iv
+JOIN produto p ON p.prod_id_seq = iv.prod_id_seq
+GROUP BY p.prod_id_seq, p.prod_nome
+ORDER BY total_vendido DESC;
+
+-- Funcionários com maior valor de vendas
+CREATE VIEW vw_funcionarios_mais_vendas AS
+SELECT
+    f.func_id,
+    f.func_nome,
+    COUNT(v.venda_id) AS total_vendas,
+    SUM(v.venda_total) AS valor_total_vendido
+FROM venda v
+JOIN funcionario f ON f.func_id = v.func_id
+GROUP BY f.func_id, f.func_nome
+ORDER BY valor_total_vendido DESC;
+
+-- Compras por fornecedor
+CREATE VIEW vw_compras_por_fornecedor AS
+SELECT
+    f.forn_id_seq,
+    f.forn_nome_empresa,
+    COUNT(c.compra_id) AS total_compras,
+    SUM(c.compra_total) AS valor_total_comprado
+FROM compra c
+JOIN fornecedor f ON f.forn_id_seq = c.forn_id
+GROUP BY f.forn_id_seq, f.forn_nome_empresa
+ORDER BY valor_total_comprado DESC;
