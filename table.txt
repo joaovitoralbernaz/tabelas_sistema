@@ -1,5 +1,5 @@
 -- Criação das tabelas
-
+/*
 CREATE TABLE IF NOT EXISTS clientes(
     cli_id INTEGER PRIMARY KEY AUTOINCREMENT,
     cli_nome VARCHAR(100) NOT NULL,
@@ -41,7 +41,7 @@ CREATE TABLE IF NOT EXISTS endereco(
     end_estado VARCHAR(2) NOT NULL,
     FOREIGN KEY (cli_id) REFERENCES clientes(cli_id),
     FOREIGN KEY (func_id) REFERENCES funcionario(func_id),
-    FOREIGN KEY (forn_id__seq) REFERENCES fornecedor(forn_id_seq)
+    FOREIGN KEY (forn_id_seq) REFERENCES fornecedor(forn_id_seq)
 );
 
 CREATE TABLE IF NOT EXISTS telefone(
@@ -62,7 +62,7 @@ CREATE TABLE IF NOT EXISTS telefone_fornecedor(
     tel_id INTEGER PRIMARY KEY AUTOINCREMENT,
     forn_id INTEGER NOT NULL,
     tel_numero VARCHAR(15) NOT NULL,
-    FOREIGN KEY (forn_id) REFERENCES fornecedor(forn_id)
+    FOREIGN KEY (forn_id) REFERENCES fornecedor(forn_id_seq)
 );
 
 CREATE TABLE IF NOT EXISTS produto(
@@ -77,11 +77,113 @@ CREATE TABLE IF NOT EXISTS produto(
     prod_preco_atual DECIMAL(10,2) NOT NULL,
     prod_preco_medio DECIMAL(10,2) NOT NULL,
     prod_data_cadastro DATE NOT NULL,
-  	prod_empenho VARCHAR(50) NOT NULL,
+    prod_empenho VARCHAR(50) NOT NULL,
     prod_registro VARCHAR(40) NOT NULL,
-  	prod_lote VARCHAR(10) NOT NULL,
+    prod_lote VARCHAR(10) NOT NULL,
     prod_descricao TEXT NOT NULL,
     FOREIGN KEY (forn_id) REFERENCES fornecedor(forn_id_seq)
+);
+
+-- VENDAS 
+CREATE TABLE IF NOT EXISTS venda (
+    venda_id INTEGER PRIMARY KEY AUTOINCREMENT,
+    cli_id INTEGER NOT NULL,
+    func_id INTEGER, -- Funcionário que realizou a venda
+    venda_data DATETIME DEFAULT CURRENT_TIMESTAMP,
+    venda_total DECIMAL(10,2) NOT NULL,
+    FOREIGN KEY (cli_id) REFERENCES clientes(cli_id),
+    FOREIGN KEY (func_id) REFERENCES funcionario(func_id)
+);
+
+CREATE TABLE IF NOT EXISTS item_venda (
+    item_id INTEGER PRIMARY KEY AUTOINCREMENT,
+    venda_id INTEGER NOT NULL,
+    prod_id_seq INTEGER NOT NULL,
+    quantidade INTEGER NOT NULL,
+    preco_unitario DECIMAL(10,2) NOT NULL,
+    subtotal DECIMAL(10,2) NOT NULL,
+    FOREIGN KEY (venda_id) REFERENCES venda(venda_id),
+    FOREIGN KEY (prod_id_seq) REFERENCES produto(prod_id_seq)
+);
+
+-- COMPRAS 
+CREATE TABLE IF NOT EXISTS compra (
+    compra_id INTEGER PRIMARY KEY AUTOINCREMENT,
+    forn_id INTEGER NOT NULL,
+    func_id INTEGER, -- Funcionário que registrou a compra
+    compra_data DATE DEFAULT CURRENT_DATE,
+    compra_total DECIMAL(10,2) NOT NULL,
+    FOREIGN KEY (forn_id) REFERENCES fornecedor(forn_id_seq),
+    FOREIGN KEY (func_id) REFERENCES funcionario(func_id)
+);
+
+CREATE TABLE IF NOT EXISTS item_compra (
+    item_compra_id INTEGER PRIMARY KEY AUTOINCREMENT,
+    compra_id INTEGER NOT NULL,
+    prod_id_seq INTEGER NOT NULL,
+    quantidade INTEGER NOT NULL,
+    preco_unitario DECIMAL(10,2) NOT NULL,
+    subtotal DECIMAL(10,2) NOT NULL,
+    FOREIGN KEY (compra_id) REFERENCES compra(compra_id),
+    FOREIGN KEY (prod_id_seq) REFERENCES produto(prod_id_seq)
+);
+
+-- CONSULTA 
+CREATE TABLE IF NOT EXISTS consulta (
+    consulta_id INTEGER PRIMARY KEY AUTOINCREMENT,
+    cli_id INTEGER NOT NULL,
+    func_id INTEGER NOT NULL, -- Funcionário que realizou a consulta
+    data_consulta DATETIME NOT NULL,
+    tipo_consulta VARCHAR(50) NOT NULL, -- Ex: "Aferição de pressão", "Consulta farmacêutica"
+    observacoes TEXT,
+    FOREIGN KEY (cli_id) REFERENCES clientes(cli_id),
+    FOREIGN KEY (func_id) REFERENCES funcionario(func_id)
+);
+
+-- TABELA DE RECEITAS 
+CREATE TABLE IF NOT EXISTS receita (
+    receita_id INTEGER PRIMARY KEY AUTOINCREMENT,
+    cli_id INTEGER NOT NULL,
+    func_id INTEGER NOT NULL, -- farmacêutico que registrou a receita
+    receita_data DATE NOT NULL,
+    receita_valida_ate DATE NOT NULL,
+    descricao TEXT NOT NULL,
+    FOREIGN KEY (cli_id) REFERENCES clientes(cli_id),
+    FOREIGN KEY (func_id) REFERENCES funcionario(func_id)
+);
+
+CREATE TABLE IF NOT EXISTS item_receita (
+    item_receita_id INTEGER PRIMARY KEY AUTOINCREMENT,
+    receita_id INTEGER NOT NULL,
+    prod_id_seq INTEGER NOT NULL,
+    quantidade INTEGER NOT NULL,
+    FOREIGN KEY (receita_id) REFERENCES receita(receita_id),
+    FOREIGN KEY (prod_id_seq) REFERENCES produto(prod_id_seq)
+);
+
+-- ALERTAS DE ESTOQUE 
+CREATE TABLE IF NOT EXISTS alerta_estoque (
+    alerta_id INTEGER PRIMARY KEY AUTOINCREMENT,
+    prod_id_seq INTEGER NOT NULL,
+    data_alerta DATETIME DEFAULT CURRENT_TIMESTAMP,
+    estoque_atual INTEGER NOT NULL,
+    quantidade_minima INTEGER NOT NULL,
+    mensagem TEXT NOT NULL,
+    resolvido BOOLEAN DEFAULT 0,
+    FOREIGN KEY (prod_id_seq) REFERENCES produto(prod_id_seq)
+);
+
+-- REGISTRO DE LOG DE MOVIMENTACAO DO ESTOQUE 
+CREATE TABLE IF NOT EXISTS estoque_movimentacao (
+    mov_id INTEGER PRIMARY KEY AUTOINCREMENT,
+    prod_id_seq INTEGER NOT NULL,
+    tipo_movimentacao VARCHAR(10) NOT NULL, -- 'entrada' ou 'saida'
+    quantidade INTEGER NOT NULL,
+    data_movimentacao DATETIME DEFAULT CURRENT_TIMESTAMP,
+    origem VARCHAR(50), -- ex: 'compra', 'venda', 'ajuste manual'
+    func_id INTEGER, -- funcionário responsável pela movimentação
+    FOREIGN KEY (prod_id_seq) REFERENCES produto(prod_id_seq),
+    FOREIGN KEY (func_id) REFERENCES funcionario(func_id)
 );
 
 -- Inserção de dados
@@ -122,16 +224,18 @@ INSERT INTO funcionario (func_nome, func_cpf, func_email, func_cargo, func_salar
 ('Diego Martins', '555.666.777-88', 'diego.martins@farmacia.com', 'Atendente', 2200.00),
 ('Dra. Larissa Pereira', '666.777.888-99', 'larissa.pereira@farmacia.com', 'Farmacêutica', 7500.00);
 
--- ENDEREÇOS (para clientes e funcionários)
-INSERT INTO endereco (cli_id, func_id, end_cep, end_logradouro, end_numero, end_complemento, end_bairro, end_cidade, end_estado) VALUES
-(1, NULL, '01310-100', 'Rua das Flores', '123', 'Apto 45', 'Vila Madalena', 'São Paulo', 'SP'),
-(2, NULL, '20040-020', 'Av. Copacabana', '456', 'Cobertura', 'Copacabana', 'Rio de Janeiro', 'RJ'),
-(3, NULL, '30112-000', 'Rua Savassi', '789', 'Casa', 'Savassi', 'Belo Horizonte', 'MG'),
-(4, NULL, '80420-090', 'Av. Batel', '321', 'Sala 10', 'Batel', 'Curitiba', 'PR'),
-(5, NULL, '60160-230', 'Rua Aldeota', '654', 'Apto 20', 'Aldeota', 'Fortaleza', 'CE'),
-(NULL, 1, '04567-890', 'Rua Ibirapuera', '100', 'Casa 2', 'Ibirapuera', 'São Paulo', 'SP'),
-(NULL, 2, '01234-567', 'Av. Faria Lima', '200', 'Apto 15', 'Itaim Bibi', 'São Paulo', 'SP'),
-(NULL, 3, '05678-901', 'Rua Vila Olímpia', '300', 'Conj 5', 'Vila Olímpia', 'São Paulo', 'SP');
+-- ENDEREÇOS (para clientes, funcionários e fornecedores)
+INSERT INTO endereco (cli_id, func_id, forn_id_seq, end_cep, end_logradouro, end_numero, end_complemento, end_bairro, end_cidade, end_estado) VALUES
+(1, NULL, NULL, '01310-100', 'Rua das Flores', '123', 'Apto 45', 'Vila Madalena', 'São Paulo', 'SP'),
+(2, NULL, NULL, '20040-020', 'Av. Copacabana', '456', 'Cobertura', 'Copacabana', 'Rio de Janeiro', 'RJ'),
+(3, NULL, NULL, '30112-000', 'Rua Savassi', '789', 'Casa', 'Savassi', 'Belo Horizonte', 'MG'),
+(4, NULL, NULL, '80420-090', 'Av. Batel', '321', 'Sala 10', 'Batel', 'Curitiba', 'PR'),
+(5, NULL, NULL, '60160-230', 'Rua Aldeota', '654', 'Apto 20', 'Aldeota', 'Fortaleza', 'CE'),
+(NULL, 1, NULL, '04567-890', 'Rua Ibirapuera', '100', 'Casa 2', 'Ibirapuera', 'São Paulo', 'SP'),
+(NULL, 2, NULL, '01234-567', 'Av. Faria Lima', '200', 'Apto 15', 'Itaim Bibi', 'São Paulo', 'SP'),
+(NULL, 3, NULL, '05678-901', 'Rua Vila Olímpia', '300', 'Conj 5', 'Vila Olímpia', 'São Paulo', 'SP'),
+(NULL, NULL, 1, '01000-000', 'Av. Paulista', '1000', 'Conj 101', 'Bela Vista', 'São Paulo', 'SP'),
+(NULL, NULL, 2, '22000-000', 'Rua Copacabana', '500', 'Loja 1', 'Copacabana', 'Rio de Janeiro', 'RJ');
 
 -- TELEFONES (para clientes)
 INSERT INTO telefone (cli_id, tel_numero) VALUES
@@ -146,7 +250,7 @@ INSERT INTO telefone (cli_id, tel_numero) VALUES
 (7, '11321098765'),
 (8, '21210987654');
 
--- TELEFONES (para funcionario)
+-- TELEFONES (para funcionários)
 INSERT INTO telefone_funcionario (func_id, tel_numero) VALUES
 (1, '12345678901'),
 (1, '09876543210'),
@@ -155,11 +259,9 @@ INSERT INTO telefone_funcionario (func_id, tel_numero) VALUES
 (3, '32144858547'),
 (4, '85652365896'),
 (5, '98765432345'),
-(6, '67443576459'),
-(7, '88555559696'),
-(8, '55848145269');
+(6, '67443576459');
 
--- TELEFONES (para fornecedor)
+-- TELEFONES (para fornecedores)
 INSERT INTO telefone_fornecedor (forn_id, tel_numero) VALUES
 (1, '74593248598'),
 (1, '23145558558'),
@@ -167,11 +269,7 @@ INSERT INTO telefone_fornecedor (forn_id, tel_numero) VALUES
 (3, '78931126525'),
 (3, '12536985656'),
 (4, '36147982522'),
-(5, '25147888554'),
-(6, '25587442697'),
-(7, '36417891542'),
-(8, '54799314889');
-
+(5, '25147888554');
 
 -- PRODUTOS
 INSERT INTO produto (
@@ -186,136 +284,74 @@ INSERT INTO produto (
     prod_preco_medio,
     prod_data_cadastro,
     prod_empenho,
-  	prod_registro,
+    prod_registro,
     prod_lote,
     prod_descricao
 ) VALUES
-(1, 'Paracetamol 500mg', '7891234567890', 'Analgésico', 50, 10, 8.90, 7.50, 8.20, '2024-01-15', 'LOTE001', 'Paracetamol 500mg - Analgésico e antipirético - Caixa com 20 comprimidos'),
-(1, 'Dipirona 500mg', '7891234567891', 'Analgésico', 30, 8, 12.90, 11.50, 12.20, '2024-01-20', 'LOTE002', 'Dipirona Sódica 500mg - Analgésico e antitérmico - Caixa com 10 comprimidos'),
-(2, 'Omeprazol 20mg', '7891234567892', 'Protetor Gástrico', 25, 5, 15.90, 14.20, 15.05, '2024-02-01', 'LOTE003', 'Omeprazol 20mg - Protetor gástrico - Caixa com 28 cápsulas'),
-(2, 'Losartana 50mg', '7891234567893', 'Anti-hipertensivo', 40, 10, 18.90, 16.80, 17.85, '2024-02-10', 'LOTE004', 'Losartana Potássica 50mg - Anti-hipertensivo - Caixa com 30 comprimidos'),
-(3, 'Vitamina C 1g', '7891234567894', 'Vitamina', 20, 5, 25.90, 23.50, 24.70, '2024-02-15', 'LOTE005', 'Vitamina C 1g - Suplemento vitamínico - Frasco com 30 comprimidos efervescentes'),
-(3, 'Dorflex', '7891234567895', 'Relaxante Muscular', 35, 8, 22.90, 20.50, 21.70, '2024-03-01', 'LOTE006', 'Dorflex - Relaxante muscular - Caixa com 20 comprimidos'),
-(4, 'Soro Fisiológico 250ml', '7891234567896', 'Solução', 60, 20, 4.90, 4.20, 4.55, '2024-03-10', 'LOTE007', 'Soro Fisiológico 0,9% - 250ml - Uso nasal e ocular'),
-(4, 'Álcool 70% - 1L', '7891234567897', 'Antisséptico', 45, 15, 12.90, 11.90, 12.40, '2024-03-15', 'LOTE008', 'Álcool Etílico Hidratado 70% - Antisséptico - Frasco 1 litro'),
-(5, 'Ibuprofeno 600mg', '7891234567898', 'Anti-inflamatório', 30, 8, 16.90, 15.20, 16.05, '2024-04-01', 'LOTE009', 'Ibuprofeno 600mg - Anti-inflamatório - Caixa com 10 comprimidos'),
-(5, 'Termômetro Digital', '7891234567899', 'Equipamento', 15, 3, 35.90, 32.50, 34.20, '2024-04-10', 'LOTE010', 'Termômetro Digital - Medição em 60 segundos - À prova d água');
+(1, 'Paracetamol 500mg', '7891234567890', 'Analgésico', 50, 10, 8.90, 7.50, 8.20, '2024-01-15', 'EMP001', 'REG001', 'LOTE001', 'Paracetamol 500mg - Analgésico e antipirético - Caixa com 20 comprimidos'),
+(1, 'Dipirona 500mg', '7891234567891', 'Analgésico', 30, 8, 12.90, 11.50, 12.20, '2024-01-20', 'EMP002', 'REG002', 'LOTE002', 'Dipirona Sódica 500mg - Analgésico e antitérmico - Caixa com 10 comprimidos'),
+(2, 'Omeprazol 20mg', '7891234567892', 'Protetor Gástrico', 25, 5, 15.90, 14.20, 15.05, '2024-02-01', 'EMP003', 'REG003', 'LOTE003', 'Omeprazol 20mg - Protetor gástrico - Caixa com 28 cápsulas'),
+(2, 'Losartana 50mg', '7891234567893', 'Anti-hipertensivo', 40, 10, 18.90, 16.80, 17.85, '2024-02-10', 'EMP004', 'REG004', 'LOTE004', 'Losartana Potássica 50mg - Anti-hipertensivo - Caixa com 30 comprimidos'),
+(3, 'Vitamina C 1g', '7891234567894', 'Vitamina', 20, 5, 25.90, 23.50, 24.70, '2024-02-15', 'EMP005', 'REG005', 'LOTE005', 'Vitamina C 1g - Suplemento vitamínico - Frasco com 30 comprimidos efervescentes'),
+(3, 'Dorflex', '7891234567895', 'Relaxante Muscular', 35, 8, 22.90, 20.50, 21.70, '2024-03-01', 'EMP006', 'REG006', 'LOTE006', 'Dorflex - Relaxante muscular - Caixa com 20 comprimidos'),
+(4, 'Soro Fisiológico 250ml', '7891234567896', 'Solução', 60, 20, 4.90, 4.20, 4.55, '2024-03-10', 'EMP007', 'REG007', 'LOTE007', 'Soro Fisiológico 0,9% - 250ml - Uso nasal e ocular'),
+(4, 'Álcool 70% - 1L', '7891234567897', 'Antisséptico', 45, 15, 12.90, 11.90, 12.40, '2024-03-15', 'EMP008', 'REG008', 'LOTE008', 'Álcool Etílico Hidratado 70% - Antisséptico - Frasco 1 litro'),
+(5, 'Ibuprofeno 600mg', '7891234567898', 'Anti-inflamatório', 30, 8, 16.90, 15.20, 16.05, '2024-04-01', 'EMP009', 'REG009', 'LOTE009', 'Ibuprofeno 600mg - Anti-inflamatório - Caixa com 10 comprimidos'),
+(5, 'Termômetro Digital', '7891234567899', 'Equipamento', 15, 3, 35.90, 32.50, 34.20, '2024-04-10', 'EMP010', 'REG010', 'LOTE010', 'Termômetro Digital - Medição em 60 segundos - À prova d água');
 
--- VENDAS 
+-- DADOS DE EXEMPLO PARA VENDAS
+INSERT INTO venda (cli_id, func_id, venda_data, venda_total) VALUES
+(1, 2, '2024-05-01 10:30:00', 23.40),
+(2, 2, '2024-05-02 14:15:00', 28.30),
+(3, 1, '2024-05-03 16:45:00', 53.90),
+(4, 3, '2024-05-04 09:20:00', 16.80),
+(5, 2, '2024-05-05 11:10:00', 65.00);
 
-CREATE TABLE IF NOT EXISTS venda (
-    venda_id INTEGER PRIMARY KEY AUTOINCREMENT,
-    cli_id INTEGER NOT NULL,
-    func_id INTEGER, -- Funcionário que realizou a venda
-    venda_data DATETIME DEFAULT CURRENT_TIMESTAMP,
-    venda_total DECIMAL(10,2) NOT NULL,
-    FOREIGN KEY (cli_id) REFERENCES clientes(cli_id),
-    FOREIGN KEY (func_id) REFERENCES funcionario(func_id)
-);
+INSERT INTO item_venda (venda_id, prod_id_seq, quantidade, preco_unitario, subtotal) VALUES
+(1, 1, 2, 7.50, 15.00),
+(1, 7, 2, 4.20, 8.40),
+(2, 2, 1, 11.50, 11.50),
+(2, 4, 1, 16.80, 16.80),
+(3, 9, 2, 15.20, 30.40),
+(3, 5, 1, 23.50, 23.50),
+(4, 4, 1, 16.80, 16.80),
+(5, 10, 2, 32.50, 65.00);
 
-CREATE TABLE IF NOT EXISTS item_venda (
-    item_id INTEGER PRIMARY KEY AUTOINCREMENT,
-    venda_id INTEGER NOT NULL,
-    prod_id_seq INTEGER NOT NULL,
-    quantidade INTEGER NOT NULL,
-    preco_unitario DECIMAL(10,2) NOT NULL,
-    subtotal DECIMAL(10,2) NOT NULL,
-    FOREIGN KEY (venda_id) REFERENCES venda(venda_id),
-    FOREIGN KEY (prod_id_seq) REFERENCES produto(prod_id_seq)
-);
+-- DADOS DE EXEMPLO PARA COMPRAS
+INSERT INTO compra (forn_id, func_id, compra_data, compra_total) VALUES
+(1, 1, '2024-04-15', 500.00),
+(2, 1, '2024-04-20', 750.00),
+(3, 1, '2024-04-25', 300.00);
 
--- COMPRAS 
+INSERT INTO item_compra (compra_id, prod_id_seq, quantidade, preco_unitario, subtotal) VALUES
+(1, 1, 50, 6.00, 300.00),
+(1, 2, 20, 10.00, 200.00),
+(2, 3, 30, 12.00, 360.00),
+(2, 4, 25, 15.60, 390.00),
+(3, 5, 15, 20.00, 300.00);
 
-CREATE TABLE IF NOT EXISTS compra (
-    compra_id INTEGER PRIMARY KEY AUTOINCREMENT,
-    forn_id INTEGER NOT NULL,
-    func_id INTEGER, -- Funcionário que registrou a compra
-    compra_data DATE DEFAULT CURRENT_DATE,
-    compra_total DECIMAL(10,2) NOT NULL,
-    FOREIGN KEY (forn_id) REFERENCES fornecedor(forn_id_seq),
-    FOREIGN KEY (func_id) REFERENCES funcionario(func_id)
-);
+-- DADOS DE EXEMPLO PARA CONSULTAS
+INSERT INTO consulta (cli_id, func_id, data_consulta, tipo_consulta, observacoes) VALUES
+(1, 1, '2024-05-01 10:00:00', 'Aferição de pressão', 'Pressão arterial normal: 120/80'),
+(2, 6, '2024-05-02 14:00:00', 'Consulta farmacêutica', 'Orientação sobre uso correto de medicamentos'),
+(3, 1, '2024-05-03 16:00:00', 'Teste de glicemia', 'Glicemia em jejum: 95 mg/dL'),
+(4, 6, '2024-05-04 09:00:00', 'Orientação medicamentosa', 'Explicação sobre interações medicamentosas');
 
-CREATE TABLE IF NOT EXISTS item_compra (
-    item_compra_id INTEGER PRIMARY KEY AUTOINCREMENT,
-    compra_id INTEGER NOT NULL,
-    prod_id_seq INTEGER NOT NULL,
-    quantidade INTEGER NOT NULL,
-    preco_unitario DECIMAL(10,2) NOT NULL,
-    subtotal DECIMAL(10,2) NOT NULL,
-    FOREIGN KEY (compra_id) REFERENCES compra(compra_id),
-    FOREIGN KEY (prod_id_seq) REFERENCES produto(prod_id_seq)
-);
+-- DADOS DE EXEMPLO PARA RECEITAS
+INSERT INTO receita (cli_id, func_id, receita_data, receita_valida_ate, descricao) VALUES
+(1, 1, '2024-05-01', '2024-08-01', 'Tratamento para hipertensão'),
+(2, 6, '2024-05-02', '2024-11-02', 'Suplementação vitamínica'),
+(3, 1, '2024-05-03', '2024-08-03', 'Tratamento anti-inflamatório');
 
--- CONSULTA 
+INSERT INTO item_receita (receita_id, prod_id_seq, quantidade) VALUES
+(1, 4, 30),
+(2, 5, 60),
+(3, 9, 20);
 
-CREATE TABLE IF NOT EXISTS consulta (
-    consulta_id INTEGER PRIMARY KEY AUTOINCREMENT,
-    cli_id INTEGER NOT NULL,
-    func_id INTEGER NOT NULL, -- Funcionário que realizou a consulta
-    data_consulta DATETIME NOT NULL,
-    tipo_consulta VARCHAR(50) NOT NULL, -- Ex: "Aferição de pressão", "Consulta farmacêutica"
-    observacoes TEXT,
-    FOREIGN KEY (cli_id) REFERENCES clientes(cli_id),
-    FOREIGN KEY (func_id) REFERENCES funcionario(func_id)
-);
+-- VIEWS / RELATÓRIOS PARA ANÁLISE 
 
--- TRIGGER PARA BAIXAR O ESTOQUE APOS UMA VENDA 
-
-CREATE TRIGGER IF NOT EXISTS trg_baixar_estoque_venda
-AFTER INSERT ON item_venda
-BEGIN
-    UPDATE produto
-    SET prod_estoque_atual = prod_estoque_atual - NEW.quantidade
-    WHERE prod_id_seq = NEW.prod_id_seq;
-END;
-
--- TRIGGER (GATILHO) PARA AUMENTAR O ESTOQUE APOS UMA COMPRA 
-
-CREATE TRIGGER IF NOT EXISTS trg_repor_estoque_compra
-AFTER INSERT ON item_compra
-BEGIN
-    UPDATE produto
-    SET prod_estoque_atual = prod_estoque_atual + NEW.quantidade
-    WHERE prod_id_seq = NEW.prod_id_seq;
-END;
-
--- ALERTAS DE ESTOQUE 
-
-CREATE TABLE IF NOT EXISTS alerta_estoque (
-    alerta_id INTEGER PRIMARY KEY AUTOINCREMENT,
-    prod_id_seq INTEGER NOT NULL,
-    data_alerta DATETIME DEFAULT CURRENT_TIMESTAMP,
-    estoque_atual INTEGER NOT NULL,
-    quantidade_minima INTEGER NOT NULL,
-    mensagem TEXT NOT NULL,
-    FOREIGN KEY (prod_id_seq) REFERENCES produto(prod_id_seq)
-);
-
--- ALERTA DE ESTOQUE BAIXO 
-
-CREATE TRIGGER IF NOT EXISTS trg_alerta_estoque_baixo
-AFTER UPDATE ON produto
-WHEN NEW.prod_estoque_atual < NEW.prod_quantidade_minima
-BEGIN
-    INSERT INTO alerta_estoque (
-        prod_id_seq,
-        estoque_atual,
-        quantidade_minima,
-        mensagem
-    ) VALUES (
-        NEW.prod_id_seq,
-        NEW.prod_estoque_atual,
-        NEW.prod_quantidade_minima,
-        'Estoque abaixo do nível mínimo!'
-    );
-END;
-
-ALTER TABLE alerta_estoque ADD COLUMN resolvido BOOLEAN DEFAULT 0;
-
--- VIEW PARA VER PRODUTOS COM ESTOQUE ABAIXO DO MINIMO 
-
-CREATE VIEW vw_produtos_baixo_estoque AS
+-- VIEW para ver produtos com estoque abaixo do mínimo 
+CREATE VIEW IF NOT EXISTS vw_produtos_baixo_estoque AS
 SELECT 
     p.prod_id_seq,
     p.prod_nome,
@@ -323,97 +359,172 @@ SELECT
     p.prod_quantidade_minima,
     f.forn_nome_empresa
 FROM produto p
-JOIN fornecedor f ON f.forn_id_seq = p.forn_id
+LEFT JOIN fornecedor f ON f.forn_id_seq = p.forn_id
 WHERE p.prod_estoque_atual < p.prod_quantidade_minima;
 
--- TABELA DE RECEITAS 
-
-CREATE TABLE IF NOT EXISTS receita (
-    receita_id INTEGER PRIMARY KEY AUTOINCREMENT,
-    cli_id INTEGER NOT NULL,
-    func_id INTEGER NOT NULL, -- farmacêutico que registrou a receita
-    receita_data DATE NOT NULL,
-    receita_valida_ate DATE NOT NULL,
-    descricao TEXT NOT NULL,
-    FOREIGN KEY (cli_id) REFERENCES clientes(cli_id),
-    FOREIGN KEY (func_id) REFERENCES funcionario(func_id)
-);
-
-CREATE TABLE IF NOT EXISTS item_receita (
-    item_receita_id INTEGER PRIMARY KEY AUTOINCREMENT,
-    receita_id INTEGER NOT NULL,
-    prod_id_seq INTEGER NOT NULL,
-    quantidade INTEGER NOT NULL,
-    FOREIGN KEY (receita_id) REFERENCES receita(receita_id),
-    FOREIGN KEY (prod_id_seq) REFERENCES produto(prod_id_seq)
-);
-
--- REGISTRO DE LOG DE MOVIMENTACAO DO ESTOQUE 
-
-CREATE TABLE IF NOT EXISTS estoque_movimentacao (
-    mov_id INTEGER PRIMARY KEY AUTOINCREMENT,
-    prod_id_seq INTEGER NOT NULL,
-    tipo_movimentacao VARCHAR(10) NOT NULL, -- 'entrada' ou 'saida'
-    quantidade INTEGER NOT NULL,
-    data_movimentacao DATETIME DEFAULT CURRENT_TIMESTAMP,
-    origem VARCHAR(50), -- ex: 'compra', 'venda', 'ajuste manual'
-    func_id INTEGER, -- funcionário responsável pela movimentação
-    FOREIGN KEY (prod_id_seq) REFERENCES produto(prod_id_seq),
-    FOREIGN KEY (func_id) REFERENCES funcionario(func_id)
-);
-
-
--- TRIGGERS PARA ALIMENTAR AUTOMATICAMENTE O LOG 
-
--- Ao inserir item_venda (saída)
-CREATE TRIGGER IF NOT EXISTS trg_log_saida_estoque
-AFTER INSERT ON item_venda
-BEGIN
-    INSERT INTO estoque_movimentacao(prod_id_seq, tipo_movimentacao, quantidade, origem, func_id)
-    VALUES (NEW.prod_id_seq, 'saida', NEW.quantidade, 'venda', (SELECT func_id FROM venda WHERE venda_id = NEW.venda_id));
-END;
-
--- Ao inserir item_compra (entrada)
-CREATE TRIGGER IF NOT EXISTS trg_log_entrada_estoque
-AFTER INSERT ON item_compra
-BEGIN
-    INSERT INTO estoque_movimentacao(prod_id_seq, tipo_movimentacao, quantidade, origem, func_id)
-    VALUES (NEW.prod_id_seq, 'entrada', NEW.quantidade, 'compra', (SELECT func_id FROM compra WHERE compra_id = NEW.compra_id));
-END;
-
--- VIEWS / RELATORIOS PARA ANALISE 
-
 -- Produtos mais vendidos
-CREATE VIEW vw_produtos_mais_vendidos AS
+CREATE VIEW IF NOT EXISTS vw_produtos_mais_vendidos AS
 SELECT
     p.prod_id_seq,
     p.prod_nome,
-    SUM(iv.quantidade) AS total_vendido
-FROM item_venda iv
-JOIN produto p ON p.prod_id_seq = iv.prod_id_seq
+    COALESCE(SUM(iv.quantidade), 0) AS total_vendido,
+    COALESCE(SUM(iv.subtotal), 0) AS valor_total_vendido
+FROM produto p
+LEFT JOIN item_venda iv ON p.prod_id_seq = iv.prod_id_seq
 GROUP BY p.prod_id_seq, p.prod_nome
 ORDER BY total_vendido DESC;
 
 -- Funcionários com maior valor de vendas
-CREATE VIEW vw_funcionarios_mais_vendas AS
+CREATE VIEW IF NOT EXISTS vw_funcionarios_mais_vendas AS
 SELECT
     f.func_id,
     f.func_nome,
-    COUNT(v.venda_id) AS total_vendas,
-    SUM(v.venda_total) AS valor_total_vendido
-FROM venda v
-JOIN funcionario f ON f.func_id = v.func_id
+    COALESCE(COUNT(v.venda_id), 0) AS total_vendas,
+    COALESCE(SUM(v.venda_total), 0) AS valor_total_vendido
+FROM funcionario f
+LEFT JOIN venda v ON f.func_id = v.func_id
 GROUP BY f.func_id, f.func_nome
 ORDER BY valor_total_vendido DESC;
 
 -- Compras por fornecedor
-CREATE VIEW vw_compras_por_fornecedor AS
+CREATE VIEW IF NOT EXISTS vw_compras_por_fornecedor AS
 SELECT
     f.forn_id_seq,
     f.forn_nome_empresa,
-    COUNT(c.compra_id) AS total_compras,
-    SUM(c.compra_total) AS valor_total_comprado
-FROM compra c
-JOIN fornecedor f ON f.forn_id_seq = c.forn_id
+    COALESCE(COUNT(c.compra_id), 0) AS total_compras,
+    COALESCE(SUM(c.compra_total), 0) AS valor_total_comprado
+FROM fornecedor f
+LEFT JOIN compra c ON f.forn_id_seq = c.forn_id
 GROUP BY f.forn_id_seq, f.forn_nome_empresa
 ORDER BY valor_total_comprado DESC;
+*/
+-- ===================================================================
+-- CONSULTAS COM RELACIONAMENTOS - CLIENTES
+-- ===================================================================
+
+-- 1. Consultar clientes que têm telefone
+SELECT c.cli_nome, c.cli_email, t.tel_numero
+FROM clientes c
+INNER JOIN telefone t ON c.cli_id = t.cli_id
+ORDER BY c.cli_nome;
+
+-- 2. Ver clientes sem telefone cadastrado
+SELECT c.cli_nome, c.cli_email
+FROM clientes c
+LEFT JOIN telefone t ON c.cli_id = t.cli_id
+WHERE t.tel_numero IS NULL;
+
+-- 3. Relatório completo: clientes com endereços e telefones
+SELECT 
+    c.cli_nome,
+    c.cli_email,
+    e.end_logradouro,
+    e.end_numero,
+    e.end_bairro,
+    e.end_cidade,
+    e.end_estado,
+    t.tel_numero
+FROM clientes c
+LEFT JOIN endereco e ON c.cli_id = e.cli_id
+LEFT JOIN telefone t ON c.cli_id = t.cli_id
+ORDER BY c.cli_nome;
+
+-- 4. Clientes com histórico de vendas
+SELECT 
+    c.cli_nome,
+    c.cli_email,
+    COUNT(v.venda_id) as total_compras,
+    COALESCE(SUM(v.venda_total), 0) as valor_total_gasto
+FROM clientes c
+LEFT JOIN venda v ON c.cli_id = v.cli_id
+GROUP BY c.cli_id, c.cli_nome, c.cli_email
+ORDER BY valor_total_gasto DESC;
+
+-- 5. Clientes que fizeram consultas
+SELECT 
+    c.cli_nome,
+    c.cli_email,
+    COUNT(con.consulta_id) as total_consultas,
+    MAX(con.data_consulta) as ultima_consulta
+FROM clientes c
+INNER JOIN consulta con ON c.cli_id = con.cli_id
+GROUP BY c.cli_id, c.cli_nome, c.cli_email
+ORDER BY ultima_consulta DESC;
+
+-- ===================================================================
+-- CONSULTAS COM RELACIONAMENTOS - FUNCIONÁRIOS
+-- ===================================================================
+
+-- 6. Funcionários com endereços e telefones
+SELECT 
+    f.func_nome,
+    f.func_cargo,
+    f.func_salario,
+    e.end_logradouro,
+    e.end_numero,
+    e.end_bairro,
+    e.end_cidade,
+    tf.tel_numero
+FROM funcionario f
+LEFT JOIN endereco e ON f.func_id = e.func_id
+LEFT JOIN telefone_funcionario tf ON f.func_id = tf.func_id
+ORDER BY f.func_nome;
+
+-- 7. Funcionários sem telefone cadastrado
+SELECT f.func_nome, f.func_email, f.func_cargo
+FROM funcionario f
+LEFT JOIN telefone_funcionario tf ON f.func_id = tf.func_id
+WHERE tf.tel_numero IS NULL;
+
+-- 8. Funcionários com performance de vendas
+SELECT 
+    f.func_nome,
+    f.func_cargo,
+    COUNT(v.venda_id) as vendas_realizadas,
+    COALESCE(SUM(v.venda_total), 0) as valor_total_vendido,
+    COALESCE(AVG(v.venda_total), 0) as ticket_medio
+FROM funcionario f
+LEFT JOIN venda v ON f.func_id = v.func_id
+GROUP BY f.func_id, f.func_nome, f.func_cargo
+ORDER BY valor_total_vendido DESC;
+
+-- 9. Funcionários que realizaram consultas
+SELECT 
+    f.func_nome,
+    f.func_cargo,
+    COUNT(con.consulta_id) as consultas_realizadas,
+    MAX(con.data_consulta) as ultima_consulta
+FROM funcionario f
+INNER JOIN consulta con ON f.func_id = con.func_id
+GROUP BY f.func_id, f.func_nome, f.func_cargo
+ORDER BY consultas_realizadas DESC;
+
+-- ===================================================================
+-- CONSULTAS COM RELACIONAMENTOS - FORNECEDORES
+-- ===================================================================
+
+-- 1. Todos os produtos com seus respectivos fornecedores
+SELECT 
+    f.forn_nome_empresa,
+    f.forn_cnpj,
+    p.prod_nome,
+    p.prod_categoria,
+    p.prod_estoque_atual,
+    p.prod_preco_atual,
+    p.prod_data_cadastro
+FROM produto p
+INNER JOIN fornecedor f ON p.forn_id = f.forn_id_seq
+ORDER BY f.forn_nome_empresa, p.prod_nome;
+
+SELECT 
+    f.forn_nome_empresa,
+    f.forn_contato_nome,
+    f.forn_contato_telefone,
+    p.prod_nome,
+    p.prod_estoque_atual,
+    p.prod_quantidade_minima,
+    (p.prod_quantidade_minima - p.prod_estoque_atual) as deficit_estoque
+FROM fornecedor f
+INNER JOIN produto p ON f.forn_id_seq = p.forn_id
+WHERE p.prod_estoque_atual < p.prod_quantidade_minima
+ORDER BY deficit_estoque DESC;
