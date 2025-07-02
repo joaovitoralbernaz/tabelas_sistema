@@ -1,154 +1,202 @@
--- 1. CONSULTA TODOS OS CLIENTES
-SELECT * FROM clientes;
-
--- 2. CONSULTA TODOS OS FUNCIONÁRIOS
-SELECT * FROM funcionario;
-
--- 3. CONSULTA TODOS OS PRODUTOS
-SELECT * FROM produto;
-
--- 4. CONSULTA TODOS OS FORNECEDORES
-SELECT * FROM fornecedor;
-
--- 5. CONSULTA CLIENTES COM SEUS ENDEREÇOS
-SELECT 
-    cli_nome,
-    cli_cpf,
-    cli_email,
-    end_logradouro,
-    end_numero,
-    end_bairro,
-    end_cidade,
-    end_estado
+-- 1. Consultar clientes que têm telefone
+SELECT c.cli_nome, c.cli_email, t.tel_numero
 FROM clientes c
-LEFT JOIN endereço e ON cli_id = cli_id;
+INNER JOIN telefone t ON c.cli_id = t.cli_id
+ORDER BY c.cli_nome;
 
--- 6. CONSULTA CLIENTES COM SEUS TELEFONES
-SELECT 
-    cli_nome,
-    cli_cpf,
-    tel_numero
-FROM clientes c
-LEFT JOIN telefone ON cli_id = cli_id;
-
--- 7. CONSULTA FUNCIONÁRIOS COM SEUS ENDEREÇOS
-SELECT 
-    func_nome,
-    func_cargo,
-    func_salario,
-    end_logradouro,
-    end_numero,
-    end_bairro,
-    end_cidade
-FROM funcionario f
-LEFT JOIN endereço e ON f.func_id = e.func_id;
-
--- CORRIGINDO QUERIES COM NOMES DOS FORNECEDORES DO INSERT
--- No INSERT você usou apenas 'forn_nome', não 'forn_nome_empresa'
-
--- 8. CONSULTA PRODUTOS COM SEUS FORNECEDORES (CORRIGIDA)
-SELECT 
-    p.prod_nome,
-    p.prod_preco_atual,
-    p.prod_estoque_atual,
-    f.forn_nome_empresa,
-    f.forn_telefone
-FROM produto p
-LEFT JOIN fornecedor f ON p.forn_id = f.forn_id_seq;
-
--- 18. CONTAGEM DE PRODUTOS POR FORNECEDOR (CORRIGIDA)
-SELECT f.forn_nome_empresa, COUNT(p.prod_id_seq) as total_produtos
-FROM fornecedor f
-LEFT JOIN produto p ON f.forn_id_seq = p.forn_id
-GROUP BY f.forn_nome_empresa;
-
--- 19. MÉDIA DE PREÇOS DOS PRODUTOS
-SELECT AVG(CAST(prod_preco_atual AS REAL)) as preco_medio
-FROM produto;
-
--- 20. MAIOR E MENOR SALÁRIO DOS FUNCIONÁRIOS
-SELECT 
-    MAX(CAST(func_salario AS REAL)) as maior_salario,
-    MIN(CAST(func_salario AS REAL)) as menor_salario
-FROM funcionario;
-
--- 21. PRODUTOS CADASTRADOS EM 2024
-SELECT prod_nome, prod_data_cadastro
-FROM produto 
-WHERE prod_data_cadastro LIKE '2024%';
-
--- 22. CLIENTES COM MAIS DE UM TELEFONE
-SELECT c.cli_nome, COUNT(t.tel_id) as total_telefones
-FROM clientes c
-JOIN telefone t ON c.cli_id = t.cli_id
-GROUP BY c.cli_id, c.cli_nome
-HAVING COUNT(t.tel_id) > 1;
-
--- 23. FORNECEDORES COM CONTATOS POR CARGO
-SELECT forn_nome_empresa, forn_contato_nome, forn_contato_cargo
-FROM fornecedor
-ORDER BY forn_contato_cargo;
-
--- 24. TOTAL DE FUNCIONÁRIOS POR CARGO
-SELECT func_cargo, COUNT(*) as total
-FROM funcionario
-GROUP BY func_cargo;
-
--- 25. PRODUTOS MAIS CAROS QUE A MÉDIA
-SELECT prod_nome, prod_preco_atual
-FROM produto
-WHERE CAST(prod_preco_atual AS REAL) > (
-    SELECT AVG(CAST(prod_preco_atual AS REAL)) FROM produto
-);
-
--- 26. BUSCA COMPLETA DE CLIENTE (com endereço e telefones)
+-- 2. Relatório completo: clientes com endereços e telefones
 SELECT 
     c.cli_nome,
-    c.cli_cpf,
     c.cli_email,
-    e.end_logradouro || ', ' || e.end_numero || ' - ' || e.end_bairro || ', ' || e.end_cidade as endereco_completo,
-    GROUP_CONCAT(t.tel_numero, ' / ') as telefones
+    e.end_logradouro,
+    e.end_numero,
+    e.end_bairro,
+    e.end_cidade,
+    e.end_estado,
+    t.tel_numero
 FROM clientes c
-LEFT JOIN endereço e ON c.cli_id = e.cli_id
+LEFT JOIN endereco e ON c.cli_id = e.cli_id
 LEFT JOIN telefone t ON c.cli_id = t.cli_id
-GROUP BY c.cli_id;
+ORDER BY c.cli_nome;
 
--- 27. RELATÓRIO COMPLETO DE PRODUTOS
+-- 3. Clientes com histórico de vendas
 SELECT 
+    c.cli_nome,
+    c.cli_email,
+    COUNT(v.venda_id) as total_compras,
+    COALESCE(SUM(v.venda_total), 0) as valor_total_gasto
+FROM clientes c
+LEFT JOIN venda v ON c.cli_id = v.cli_id
+GROUP BY c.cli_id, c.cli_nome, c.cli_email
+ORDER BY valor_total_gasto DESC;
+
+-- 4. Todos os produtos com seus respectivos fornecedores
+SELECT 
+    f.forn_nome_empresa,
+    f.forn_cnpj,
     p.prod_nome,
-    f.forn_nome_empresa as fornecedor,
     p.prod_categoria,
-    p.prod_preco_atual,
     p.prod_estoque_atual,
+    p.prod_preco_atual,
     p.prod_data_cadastro
 FROM produto p
-LEFT JOIN fornecedor f ON p.forn_id = f.forn_id_seq
-ORDER BY p.prod_nome;
+INNER JOIN fornecedor f ON p.forn_id = f.forn_id_seq
+ORDER BY f.forn_nome_empresa, p.prod_nome;
 
--- 28. FUNCIONÁRIOS E SEUS DADOS COMPLETOS
 SELECT 
-    f.func_nome,
-    f.func_cargo,
-    f.func_salario,
-    f.func_email,
-    f.func_telefone,
-    COALESCE(e.end_logradouro || ', ' || e.end_numero || ' - ' || e.end_cidade, 'Endereço não cadastrado') as endereco
-FROM funcionario f
-LEFT JOIN endereço e ON f.func_id = e.func_id;
+    f.forn_nome_empresa,
+    f.forn_contato_nome,
+    f.forn_contato_telefone,
+    p.prod_nome,
+    p.prod_estoque_atual,
+    p.prod_quantidade_minima,
+    (p.prod_quantidade_minima - p.prod_estoque_atual) as deficit_estoque
+FROM fornecedor f
+INNER JOIN produto p ON f.forn_id_seq = p.forn_id
+WHERE p.prod_estoque_atual < p.prod_quantidade_minima
+ORDER BY deficit_estoque DESC;
 
--- 29. FORNECEDORES COM DADOS DE CONTATO
-SELECT 
-    forn_nome_empresa,
-    forn_email,
-    forn_telefone,
-    forn_contato_nome,
-    forn_contato_cargo,
-    forn_contato_email
-FROM fornecedor;
+-- VENDAS
 
--- 30. ESTATÍSTICAS GERAIS DO SISTEMA
-SELECT 
-    (SELECT COUNT(*) FROM clientes) as total_clientes,
-    (SELECT COUNT(*) FROM funcionario) as total_funcionarios,
-    (SELECT COUNT(*) FROM produto) as total_produtos,
-    (SELECT COUNT(*) FROM fornecedor) as total_fornecedores;
+-- 5. Ver produtos mais vendidos
+SELECT * FROM vw_produtos_mais_vendidos LIMIT 5;
+
+-- 6. Ver funcionários com mais vendas
+SELECT * FROM vw_funcionarios_mais_vendas;
+
+-- 7. Ver estoque atual dos produtos
+SELECT prod_nome, prod_estoque_atual, prod_quantidade_minima 
+FROM produto 
+ORDER BY prod_estoque_atual;
+
+-- 8.Ver alertas de estoque
+SELECT * FROM alerta_estoque WHERE resolvido = 0;
+
+INSERT INTO venda (cli_id, func_id, venda_data, venda_total) VALUES
+(1, 2, '2024-05-15 10:30:00', 23.00),
+(2, 3, '2024-05-15 14:20:00', 45.60),
+(3, 2, '2024-05-16 09:15:00', 67.40),
+(4, 4, '2024-05-16 16:45:00', 89.20),
+(5, 2, '2024-05-17 11:00:00', 34.70),
+(1, 3, '2024-05-17 15:30:00', 56.80),
+(6, 2, '2024-05-18 08:45:00', 78.90),
+(7, 4, '2024-05-18 13:20:00', 92.30);
+
+-- ITENS DAS VENDAS
+INSERT INTO item_venda (venda_id, prod_id_seq, quantidade, preco_unitario, subtotal) VALUES
+-- Venda 1
+(1, 1, 2, 7.50, 15.00),
+(1, 2, 1, 8.00, 8.00),
+-- Venda 2
+(2, 3, 1, 14.20, 14.20),
+(2, 4, 2, 15.70, 31.40),
+-- Venda 3
+(3, 5, 1, 23.50, 23.50),
+(3, 6, 2, 21.95, 43.90),
+-- Venda 4
+(4, 7, 3, 4.20, 12.60),
+(4, 8, 1, 11.90, 11.90),
+(4, 9, 4, 16.17, 64.70),
+-- Venda 5
+(5, 1, 3, 7.50, 22.50),
+(5, 2, 1, 12.20, 12.20),
+-- Venda 6
+(6, 3, 2, 14.20, 28.40),
+(6, 4, 1, 16.80, 16.80),
+(6, 5, 1, 11.60, 11.60),
+-- Venda 7
+(7, 6, 1, 20.50, 20.50),
+(7, 7, 5, 4.20, 21.00),
+(7, 8, 3, 12.47, 37.40),
+-- Venda 8
+(8, 9, 2, 15.20, 30.40),
+(8, 10, 1, 32.50, 32.50),
+(8, 1, 4, 7.50, 30.00);
+
+-- COMPRAS
+INSERT INTO compra (forn_id, func_id, compra_data, compra_total) VALUES
+(1, 1, '2024-05-01', 450.00),
+(2, 1, '2024-05-03', 680.00),
+(3, 1, '2024-05-05', 520.00),
+(4, 1, '2024-05-07', 380.00),
+(5, 1, '2024-05-10', 290.00);
+
+-- ITENS DAS COMPRAS
+INSERT INTO item_compra (compra_id, prod_id_seq, quantidade, preco_unitario, subtotal) VALUES
+-- Compra 1 (Fornecedor 1)
+(1, 1, 50, 6.00, 300.00),
+(1, 2, 30, 5.00, 150.00),
+-- Compra 2 (Fornecedor 2)
+(2, 3, 40, 12.00, 480.00),
+(2, 4, 25, 8.00, 200.00),
+-- Compra 3 (Fornecedor 3)
+(3, 5, 30, 18.00, 540.00),
+(3, 6, 20, 16.00, 320.00),
+-- Compra 4 (Fornecedor 4)
+(4, 7, 100, 2.50, 250.00),
+(4, 8, 50, 8.00, 400.00),
+-- Compra 5 (Fornecedor 5)
+(5, 9, 40, 12.00, 480.00),
+(5, 10, 15, 25.00, 375.00);
+
+-- CONSULTAS
+INSERT INTO consulta (cli_id, func_id, data_consulta, tipo_consulta, observacoes) VALUES
+(1, 1, '2024-05-15 10:00:00', 'Aferição de Pressão', 'Pressão arterial: 120/80 mmHg - Normal'),
+(2, 6, '2024-05-15 14:00:00', 'Consulta Farmacêutica', 'Orientação sobre uso correto de medicamentos'),
+(3, 1, '2024-05-16 09:00:00', 'Teste de Glicemia', 'Glicemia: 95 mg/dL - Normal'),
+(4, 6, '2024-05-16 16:00:00', 'Consulta Farmacêutica', 'Revisão de medicamentos para hipertensão'),
+(5, 1, '2024-05-17 10:30:00', 'Aferição de Pressão', 'Pressão arterial: 130/85 mmHg - Limítrofe'),
+(1, 6, '2024-05-18 08:30:00', 'Consulta Farmacêutica', 'Orientação sobre vitaminas');
+
+-- RECEITAS
+INSERT INTO receita (cli_id, func_id, receita_data, receita_valida_ate, descricao) VALUES
+(1, 1, '2024-05-15', '2024-06-15', 'Tratamento para dor de cabeça'),
+(2, 6, '2024-05-16', '2024-06-16', 'Tratamento para gastrite'),
+(3, 1, '2024-05-17', '2024-06-17', 'Suplementação vitamínica'),
+(4, 6, '2024-05-18', '2024-06-18', 'Tratamento para hipertensão');
+
+-- ITENS DAS RECEITAS
+INSERT INTO item_receita (receita_id, prod_id_seq, quantidade) VALUES
+-- Receita 1
+(1, 1, 20), -- Paracetamol
+(1, 6, 10), -- Dorflex
+-- Receita 2
+(2, 3, 28), -- Omeprazol
+-- Receita 3
+(3, 5, 30), -- Vitamina C
+-- Receita 4
+(4, 4, 30); -- Losartana
+
+-- INSERÇÃO MANUAL DE ALGUNS ALERTAS DE ESTOQUE (simulando produtos que ficaram abaixo do mínimo)
+INSERT INTO alerta_estoque (prod_id_seq, estoque_atual, quantidade_minima, mensagem, resolvido) VALUES
+(2, 7, 8, 'Estoque de Dipirona 500mg abaixo do mínimo!', 0),
+(5, 4, 5, 'Estoque de Vitamina C 1g abaixo do mínimo!', 0),
+(10, 2, 3, 'Estoque de Termômetro Digital abaixo do mínimo!', 0);
+
+-- CONSULTAS PARA VERIFICAR OS DADOS INSERIDOS
+
+-- Verificar vendas
+SELECT 'VENDAS' as tabela, COUNT(*) as total_registros FROM venda
+UNION ALL
+SELECT 'ITENS_VENDA', COUNT(*) FROM item_venda
+UNION ALL
+SELECT 'COMPRAS', COUNT(*) FROM compra
+UNION ALL
+SELECT 'ITENS_COMPRA', COUNT(*) FROM item_compra
+UNION ALL
+SELECT 'CONSULTAS', COUNT(*) FROM consulta
+UNION ALL
+SELECT 'RECEITAS', COUNT(*) FROM receita
+UNION ALL
+SELECT 'ITENS_RECEITA', COUNT(*) FROM item_receita
+UNION ALL
+SELECT 'ALERTAS_ESTOQUE', COUNT(*) FROM alerta_estoque;
+
+-- Testar as Views
+SELECT 'PRODUTOS_BAIXO_ESTOQUE' as view_name, COUNT(*) as registros FROM vw_produtos_baixo_estoque
+UNION ALL
+SELECT 'PRODUTOS_MAIS_VENDIDOS', COUNT(*) FROM vw_produtos_mais_vendidos
+UNION ALL
+SELECT 'FUNCIONARIOS_MAIS_VENDAS', COUNT(*) FROM vw_funcionarios_mais_vendas
+UNION ALL
+SELECT 'COMPRAS_POR_FORNECEDOR', COUNT(*) FROM vw_compras_por_fornecedor;
