@@ -186,6 +186,167 @@ CREATE TABLE IF NOT EXISTS estoque_movimentacao (
     FOREIGN KEY (func_id) REFERENCES funcionario(func_id)
 );
 
+    CREATE TABLE IF NOT EXISTS clientes (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            nome TEXT NOT NULL,
+            cpf TEXT NOT NULL UNIQUE,
+            email TEXT,
+            telefone TEXT,
+            logradouro VARCHAR(50) NOT NULL,
+            numero VARCHAR(5) NOT NULL,
+            complemento VARCHAR(20),
+            bairro VARCHAR(30) NOT NULL,
+            cidade VARCHAR(20) NOT NULL,
+            estado VARCHAR(2) NOT NULL,
+            cep VARCHAR(9) NOT NULL
+        )
+    `);
+
+    db.run(`
+        CREATE TABLE IF NOT EXISTS fornecedores (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            nome TEXT NOT NULL,
+            cnpj TEXT NOT NULL UNIQUE,
+            telefone TEXT,
+            email TEXT,
+            cep VARCHAR(9) NOT NULL,
+            logradouro VARCHAR(50) NOT NULL,
+            numero VARCHAR(5) NOT NULL,
+            complemento VARCHAR(20),
+            bairro VARCHAR(30) NOT NULL,
+            cidade VARCHAR(20) NOT NULL,
+            estado VARCHAR(2) NOT NULL,
+            contatoNome VARCHAR(50) NOT NULL,
+            contatoCargo VARCHAR(50) NOT NULL,
+            contatoTelefone VARCHAR(15) NOT NULL,
+            contatoEmail VARCHAR(50) NOT NULL
+        )
+    `);
+
+    db.run(`
+        CREATE TABLE IF NOT EXISTS produto(
+            prod_id_seq INTEGER PRIMARY KEY AUTOINCREMENT,
+            forn_id INTEGER,
+            prod_nome VARCHAR(50) NOT NULL,
+            prod_codigo_barra VARCHAR(20) NOT NULL,
+            prod_categoria VARCHAR(30) NOT NULL,
+            prod_estoque_atual INTEGER NOT NULL,
+            prod_quantidade_minima INTEGER NOT NULL,
+            prod_preco_anterior DECIMAL(10,2) NOT NULL,
+            prod_preco_atual DECIMAL(10,2) NOT NULL,
+            prod_preco_medio DECIMAL(10,2) NOT NULL,
+            prod_data_cadastro DATE NOT NULL,
+            prod_lote VARCHAR(10) NOT NULL,
+            prod_fornecedor VARCHAR(50) NOT NULL,
+            prod_descricao TEXT NOT NULL,
+            FOREIGN KEY (forn_id) REFERENCES fornecedores(id)
+        )
+    `);    
+
+    db.run(`
+        CREATE TABLE IF NOT EXISTS funcionario(
+        func_id INTEGER PRIMARY KEY AUTOINCREMENT,
+        func_nome VARCHAR(100) NOT NULL,
+        func_cpf VARCHAR(14) NOT NULL UNIQUE,
+        func_email VARCHAR(100) NOT NULL,
+        func_telefone VARCHAR(15) NOT NULL,
+        func_logradouro VARCHAR(50) NOT NULL,
+        func_numero VARCHAR(5) NOT NULL,
+        func_complemento VARCHAR(20),
+        func_bairro VARCHAR(30) NOT NULL,
+        func_cidade VARCHAR(20) NOT NULL,
+        func_estado VARCHAR(2) NOT NULL,
+        func_cep VARCHAR(9) NOT NULL,
+        func_cargo VARCHAR(50) NOT NULL,
+        func_salario DECIMAL(10,2) NOT NULL
+            )
+    `);
+
+    db.run(`
+        CREATE TABLE IF NOT EXISTS venda (
+        venda_id INTEGER PRIMARY KEY AUTOINCREMENT,
+        cli_id INTEGER NOT NULL,
+        func_id INTEGER NOT NULL, 
+        venda_valor DECIMAL(10, 2) NOT NULL,
+        venda_produto TEXT NOT NULL,
+        venda_funcionario TEXT NOT NULL,
+        venda_forma_pagamento TEXT NOT NULL,
+        venda_data DATETIME DEFAULT CURRENT_TIMESTAMP NOT NULL,
+        venda_total DECIMAL(10,2) NOT NULL,
+        FOREIGN KEY (cli_id) REFERENCES clientes(id),
+        FOREIGN KEY (func_id) REFERENCES funcionario(func_id)
+        )
+`);
+
+    db.run(`
+        CREATE TABLE IF NOT EXISTS cliente_movimento (
+        cli_mov_id INTEGER PRIMARY KEY AUTOINCREMENT,
+        cli_id INTEGER NOT NULL,
+        func_id INTEGER,
+        cli_mov_tipo TEXT NOT NULL,
+        cli_mov_descricao TEXT NOT NULL,
+        cli_mov_valor DECIMAL(10, 2) NOT NULL,
+        cli_mov_data DATETIME DEFAULT CURRENT_TIMESTAMP NOT NULL,
+        cli_mov_forma_pagamento TEXT NOT NULL,
+        cli_mov_documento TEXT NOT NULL,
+        cli_mov_status TEXT NOT NULL,
+        FOREIGN KEY (cli_id) REFERENCES clientes(id),
+        FOREIGN KEY (func_id) REFERENCES funcionario(func_id)
+        )
+ `);
+
+    db.run(`
+        CREATE TABLE IF NOT EXISTS fornecedor_movimento (
+        forn_mov_id INTEGER PRIMARY KEY AUTOINCREMENT,
+        forn_id INTEGER NOT NULL,
+        func_id INTEGER,
+        forn_mov_tipo TEXT NOT NULL,
+        forn_mov_descricao TEXT NOT NULL,
+        forn_mov_valor DECIMAL(10, 2) NOT NULL,
+        forn_mov_data DATETIME DEFAULT CURRENT_TIMESTAMP NOT NULL,
+        forn_mov_forma_pagamento TEXT NOT NULL,
+        forn_mov_documento TEXT NOT NULL,
+        forn_mov_status TEXT NOT NULL,
+        FOREIGN KEY (forn_id) REFERENCES fornecedores(id),
+        FOREIGN KEY (func_id) REFERENCES funcionario(func_id)
+        )
+    `);
+
+    db.run(`
+        CREATE TABLE IF NOT EXISTS produto_movimento (
+            prod_mov_id INTEGER PRIMARY KEY AUTOINCREMENT,
+            prod_id INTEGER NOT NULL,
+            func_id INTEGER,
+            prod_mov_tipo TEXT NOT NULL,
+            prod_mov_descricao TEXT NOT NULL,
+            prod_mov_quantidade INTEGER NOT NULL,
+            prod_mov_valor_unitario DECIMAL(10, 2) NOT NULL,
+            prod_mov_valor_total DECIMAL(10, 2) NOT NULL,
+            prod_mov_data DATETIME DEFAULT CURRENT_TIMESTAMP NOT NULL,
+            prod_mov_documento TEXT NOT NULL,
+            prod_mov_status TEXT NOT NULL,
+            FOREIGN KEY (prod_id) REFERENCES produto(prod_id_seq),
+            FOREIGN KEY (func_id) REFERENCES funcionario(func_id)
+        )
+    `);
+
+    db.run(`
+        CREATE TABLE IF NOT EXISTS funcionario_movimento (
+            func_mov_id INTEGER PRIMARY KEY AUTOINCREMENT,
+            func_id INTEGER NOT NULL,
+            func_resp_id INTEGER,
+            func_mov_tipo TEXT NOT NULL,
+            func_mov_descricao TEXT NOT NULL,
+            func_mov_valor DECIMAL(10, 2) NOT NULL,
+            func_mov_data DATETIME DEFAULT CURRENT_TIMESTAMP NOT NULL,
+            func_mov_forma_pagamento TEXT NOT NULL,
+            func_mov_documento TEXT NOT NULL,
+            func_mov_status TEXT NOT NULL,
+            FOREIGN KEY (func_id) REFERENCES funcionario(func_id),
+            FOREIGN KEY (func_resp_id) REFERENCES funcionario(func_id)
+        )
+    `);
+
 -- Inserção de dados
 
 -- FORNECEDORES
